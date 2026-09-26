@@ -1,638 +1,574 @@
 <!DOCTYPE html>
 <html lang="sl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Preračun in Obračun Mesa</title>
-  
-  <!-- PWA & Mobile Web App Meta Tags -->
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Obračun Mesa">
-  <meta name="theme-color" content="#b91c1c">
-
-  <!-- SVG Favicon (Ikona mesa) -->
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23b91c1c'><path d='M21 5.5C21 4.12 19.88 3 18.5 3c-1.2 0-2.22.85-2.45 2H12C9.24 5 7 7.24 7 10v.55C5.85 10.78 5 11.8 5 13c0 1.66 1.34 3 3 3h.55c.23 1.15 1.25 2 2.45 2h4.05c1.15 0 2.13-.78 2.41-1.87C19.06 15.65 20 14.15 20 12.5V7.45C20.6 7.11 21 6.36 21 5.5z'/></svg>">
-
-  <script src="https://cdn.tailwindcss.com"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Obračun Mesa</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Obračun Mesa">
+<meta name="theme-color" content="#1B3B2F">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><text x='32' y='46' font-size='44' text-anchor='middle'>🥩</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bitter:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  :root{
+    --bg:#F7F5F3; --surface:#FFFFFF; --surface-alt:#FBF1F1;
+    --ink:#241F1D; --ink-soft:#736A66; --border:#E8DCD9;
+    --brand:#B91C1C; --brand-dark:#7F1D1D; --brand-soft:#FBE2E2;
+    --accent:#F4E2E2; --accent-soft:#FDECEC;
+    --total:#A13D2C; --total-soft:#F6E3DD;
+    --danger:#B23A2E; --danger-soft:#F7E1DD;
+    --success:#2F6B45; --success-soft:#E3EEE2;
+    --info:#3B5A8A; --info-soft:#E4EAF3;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;
+    padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+  .font-brand{font-family:'Bitter',serif}
+  .tabular{font-variant-numeric:tabular-nums}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px}
+  .field-label{font-size:11px;font-weight:600;color:var(--ink-soft);margin-bottom:4px;display:block;letter-spacing:.01em}
+  .field{width:100%;padding:9px 10px;font-size:13.5px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--ink);transition:border-color .15s}
+  .field:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft)}
+  .btn{display:inline-flex;align-items:center;gap:6px;border-radius:10px;font-weight:600;transition:background .15s,transform .1s;cursor:pointer;border:1px solid transparent}
+  .btn:active{transform:scale(.97)}
+  .btn-primary{background:var(--brand);color:#fff}
+  .btn-primary:hover{background:var(--brand-dark)}
+  .btn-accent{background:var(--total);color:#fff}
+  .btn-accent:hover{background:#8A3324}
+  .btn-ghost{background:var(--surface);color:var(--ink);border-color:var(--border)}
+  .btn-ghost:hover{background:var(--surface-alt)}
+  .btn-ghost-invert{background:rgba(255,255,255,.08);color:#fff;border-color:rgba(255,255,255,.35)}
+  .btn-ghost-invert:hover{background:rgba(255,255,255,.16)}
+  .btn-danger-text{color:var(--danger);font-weight:600}
+  .btn-link{color:var(--info);font-weight:600}
+  .icon{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+  .stamp{width:44px;height:44px;border-radius:9999px;background:var(--brand-dark);display:flex;align-items:center;justify-content:center;color:var(--accent-soft);border:2px solid var(--accent);flex-shrink:0}
+  .badge-edit{background:#FEF3C7;color:#92400E;border:1px solid #FDE68A}
+  .empty{border:1.5px dashed var(--border);border-radius:12px;padding:26px 14px;text-align:center;color:var(--ink-soft)}
+  .empty .icon{width:26px;height:26px;margin:0 auto 8px;color:var(--ink-soft);opacity:.6}
+  #toastWrap{position:fixed;left:0;right:0;bottom:calc(16px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;align-items:center;gap:8px;z-index:100;pointer-events:none;padding:0 12px}
+  .toast{pointer-events:auto;max-width:420px;width:100%;display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:12px;font-size:13px;font-weight:500;box-shadow:0 6px 20px rgba(0,0,0,.15);border:1px solid;animation:toastIn .18s ease-out}
+  .toast .icon{width:18px;height:18px}
+  .toast-success{background:var(--success-soft);color:#1F4A2E;border-color:#BFDCC2}
+  .toast-danger{background:var(--danger-soft);color:#7A2A21;border-color:#E7BCB2}
+  .toast-info{background:var(--info-soft);color:#2A4468;border-color:#BCCCE7}
+  @keyframes toastIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+  @media(max-width:640px){
+    .rtable thead{display:none}
+    .rtable tbody tr{display:block;border:1px solid var(--border);border-radius:10px;padding:8px 10px;margin-bottom:8px;background:var(--surface-alt)}
+    .rtable tbody tr td{display:flex;justify-content:space-between;align-items:center;padding:3px 0;border:none!important}
+    .rtable tbody tr td::before{content:attr(data-label);font-size:11px;font-weight:600;color:var(--ink-soft)}
+    .rtable tbody tr td.no-label::before{content:''}
+  }
+  @media print{
+    body *{visibility:hidden}
+    #printArea,#printArea *{visibility:visible}
+    #printArea{position:absolute;top:0;left:0;width:100%;padding:20px}
+  }
+  #printArea{display:none}
+</style>
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans min-h-screen p-3 md:p-6">
+<body class="min-h-screen p-3 md:p-6">
 
-  <!-- Navigacijski trak z gumbi za nastavitve in zbirnik -->
-  <div class="max-w-6xl mx-auto mb-4 flex flex-wrap justify-between items-center bg-red-800 text-white p-4 rounded-xl shadow-md gap-3">
-    <div class="flex items-center gap-3">
-      <div class="bg-white p-2 rounded-lg text-red-800 font-bold text-xl">🥩</div>
-      <div>
-        <h1 class="text-xl font-bold leading-tight">Obračun Mesa</h1>
-        <p class="text-xs text-red-200">Preračun in evidenca klanja</p>
-      </div>
-    </div>
-    <div class="flex gap-2 text-sm">
-      <button onclick="odpriNastavitve()" class="bg-red-700 hover:bg-red-600 text-white px-3 py-2 rounded-lg font-medium transition flex items-center gap-1 border border-red-600">
-        ⚙️ Cenik & Nastavitve
-      </button>
-      <button onclick="odpriStatistiko()" class="bg-white text-red-800 hover:bg-red-50 px-3 py-2 rounded-lg font-bold transition flex items-center gap-1 shadow-sm">
-        📊 Skupna statistika
-      </button>
+<div id="toastWrap"></div>
+
+<!-- HEADER -->
+<div class="max-w-6xl mx-auto mb-4 flex flex-wrap justify-between items-center p-4 rounded-2xl shadow-sm gap-3" style="background:var(--brand)">
+  <div class="flex items-center gap-3">
+    <div class="bg-white p-2 rounded-lg font-bold text-xl flex items-center justify-center" style="color:var(--brand)">🥩</div>
+    <div>
+      <h1 class="text-xl font-brand font-bold leading-tight text-white">Obračun Mesa</h1>
+      <p class="text-xs" style="color:var(--accent-soft)">Preračun in evidenca klanja</p>
     </div>
   </div>
+  <div class="flex gap-2 text-sm">
+    <button onclick="odpriNastavitve()" class="btn btn-ghost-invert px-3 py-2 text-xs">
+      <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.9l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.9-.3 1.7 1.7 0 00-1 1.6V21a2 2 0 11-4 0v-.2a1.7 1.7 0 00-1-1.5 1.7 1.7 0 00-1.9.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.9 1.7 1.7 0 00-1.6-1H3a2 2 0 110-4h.2a1.7 1.7 0 001.5-1 1.7 1.7 0 00-.3-1.9l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.9.3H9a1.7 1.7 0 001-1.6V3a2 2 0 114 0v.2a1.7 1.7 0 001 1.6 1.7 1.7 0 001.9-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.9V9a1.7 1.7 0 001.6 1H21a2 2 0 110 4h-.2a1.7 1.7 0 00-1.6 1z"/></svg>
+      Cenik &amp; nastavitve
+    </button>
+    <button onclick="odpriStatistiko()" class="btn px-3 py-2 text-xs font-bold" style="background:var(--accent);color:var(--brand-dark)">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6" rx=".5"/><rect x="12.5" y="8" width="3" height="10" rx=".5"/><rect x="18" y="5" width="3" height="13" rx=".5"/></svg>
+      Skupna statistika
+    </button>
+  </div>
+</div>
 
-  <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6">
-    
-    <!-- LEVI STOLPEC: Vnos ali Urejanje računa -->
-    <div class="lg:col-span-6 bg-white p-5 rounded-xl shadow-md border border-slate-200 flex flex-col justify-between">
-      <div>
-        <div class="flex justify-between items-center mb-4 border-b pb-2">
-          <h2 id="naslovObrazca" class="text-xl font-bold text-slate-900">Novi Račun</h2>
-          <span id="urejanjeBadge" class="hidden bg-amber-100 text-amber-800 text-xs px-2.5 py-1 rounded-full font-semibold border border-amber-300">
-            Način urejanja
-          </span>
-        </div>
-        
-        <!-- Osnovni podatki računa -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-          <div>
-            <label for="priimek" class="block text-xs font-semibold text-slate-600 mb-1">Priimek stranke:</label>
-            <input type="text" id="priimek" placeholder="Vnesi priimek" class="w-full p-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:outline-none">
-          </div>
-          <div>
-            <label for="datumKlanja" class="block text-xs font-semibold text-slate-600 mb-1">Datum klanja / serije:</label>
-            <input type="date" id="datumKlanja" class="w-full p-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:outline-none">
-          </div>
-        </div>
+<div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-        <!-- Vnos postavke -->
-        <div class="bg-slate-50 p-3.5 rounded-lg border border-slate-200 mb-4">
-          <h3 class="text-xs font-semibold text-slate-500 mb-2 uppercase tracking-wider">Dodaj postavko</h3>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
-            <div>
-              <label for="kosMesa" class="block text-xs font-medium text-slate-600 mb-1">Del mesa:</label>
-              <select id="kosMesa" class="w-full p-2 text-sm border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-red-500 focus:outline-none" onchange="posodobiCenoPrikaz()">
-                <!-- Opcije se napolnijo iz JS -->
-              </select>
-            </div>
-            <div>
-              <label for="teza" class="block text-xs font-medium text-slate-600 mb-1">Teža (kg):</label>
-              <input type="number" id="teza" step="0.01" min="0" placeholder="npr. 2.5" class="w-full p-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:outline-none">
-            </div>
-          </div>
-          
-          <div class="flex justify-between items-center">
-            <span class="text-xs text-slate-500">Cena na kg: <strong id="cenaNaKgPrikaz" class="text-slate-800 text-sm">0.00 €</strong></span>
-            <button onclick="dodajPostavko()" class="bg-red-700 hover:bg-red-800 text-white px-3.5 py-1.5 rounded-lg text-xs font-semibold transition">Dodaj postavko</button>
-          </div>
-        </div>
-
-        <!-- Tabela dodanih postavk -->
-        <div class="mb-4 overflow-x-auto">
-          <table class="w-full text-left border-collapse text-xs">
-            <thead>
-              <tr class="border-b text-slate-500 bg-slate-50">
-                <th class="py-2 px-1">Kos mesa</th>
-                <th class="py-2 px-1 text-right">Cena/kg</th>
-                <th class="py-2 px-1 text-right">Teža</th>
-                <th class="py-2 px-1 text-right">Skupaj</th>
-                <th class="py-2 px-1 text-center"></th>
-              </tr>
-            </thead>
-            <tbody id="tabelaPostavk">
-              <tr>
-                <td colspan="5" class="py-4 text-center text-slate-400 italic">Niste še dodali postavk.</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+  <!-- LEVI STOLPEC -->
+  <div class="lg:col-span-6 card p-5 flex flex-col justify-between">
+    <div>
+      <div class="flex justify-between items-center mb-4 border-b pb-2" style="border-color:var(--border)">
+        <h2 id="naslovObrazca" class="text-lg font-brand font-bold">Novi Račun</h2>
+        <span id="urejanjeBadge" class="hidden badge-edit text-xs px-2.5 py-1 rounded-full font-semibold">Način urejanja</span>
       </div>
 
-      <!-- Skupni znesek in Shranjevanje -->
-      <div class="border-t pt-3 flex justify-between items-center mt-2">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
         <div>
-          <span class="text-xs text-slate-500 block">Skupaj za plačilo:</span>
-          <span id="skupajZaPlacilo" class="text-xl font-bold text-green-700">0.00 €</span>
+          <label for="priimek" class="field-label">Priimek stranke</label>
+          <input type="text" id="priimek" placeholder="Vnesi priimek" class="field">
         </div>
-        <div class="flex gap-2">
-          <button id="btnPrekliciUrejanje" onclick="prekliciUrejanje()" class="hidden bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-2 rounded-lg text-xs font-semibold transition">Prekliči</button>
-          <button onclick="shraniRacun()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition shadow-sm">Shrani račun</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- DESNI STOLPEC: Shranjeni računi -->
-    <div class="lg:col-span-6 bg-white p-5 rounded-xl shadow-md border border-slate-200">
-      <div class="flex flex-wrap justify-between items-center mb-3 border-b pb-2 gap-2">
-        <h2 class="text-xl font-bold text-slate-900">Shranjeni računi</h2>
-        <div class="flex gap-2 w-full sm:w-auto">
-          <select id="filterDatum" onchange="prikaziShranjeneRacune()" class="text-xs p-1.5 border border-slate-300 rounded-lg bg-white">
-            <option value="vsi">Vsi datumi</option>
-          </select>
-          <input type="text" id="iskanje" oninput="prikaziShranjeneRacune()" placeholder="Išči po priimku..." class="text-xs p-1.5 border border-slate-300 rounded-lg w-full sm:w-32">
+        <div>
+          <label for="datumKlanja" class="field-label">Datum klanja / serije</label>
+          <input type="date" id="datumKlanja" class="field">
         </div>
       </div>
 
-      <div id="seznamRacunov" class="space-y-3 max-h-[550px] overflow-y-auto pr-1">
-        <!-- Shranjeni računi se prikažejo tukaj -->
-      </div>
-    </div>
-
-  </div>
-
-  <!-- MODAL: Nastavitve cenika -->
-  <div id="modalNastavitve" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-xl shadow-xl border border-slate-200 max-w-md w-full p-5">
-      <div class="flex justify-between items-center mb-4 border-b pb-2">
-        <h3 class="text-lg font-bold text-slate-900">Urejanje cenika mesa</h3>
-        <button onclick="zapriNastavitve()" class="text-slate-400 hover:text-slate-600 text-lg">✕</button>
+      <div class="mb-4">
+        <label for="opombe" class="field-label">Opombe (neobvezno)</label>
+        <textarea id="opombe" rows="2" placeholder="npr. brez rebrc, vse mleto, prevzem v petek..." class="field resize-none"></textarea>
       </div>
 
-      <!-- Dodaj nov kos -->
-      <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 mb-4">
-        <h4 class="text-xs font-semibold text-slate-600 mb-2 uppercase">Dodaj nov kos mesa</h4>
-        <div class="grid grid-cols-2 gap-2 mb-2">
-          <input type="text" id="novKosIme" placeholder="Npr. Pljučna" class="p-1.5 text-xs border border-slate-300 rounded-md">
-          <input type="number" id="novKosCena" step="0.5" placeholder="Cena (€/kg)" class="p-1.5 text-xs border border-slate-300 rounded-md">
+      <div class="p-3.5 rounded-xl mb-4" style="background:var(--surface-alt);border:1px solid var(--border)">
+        <h3 class="text-xs font-semibold mb-2 tracking-wide" style="color:var(--ink-soft)">Dodaj postavko</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+          <div>
+            <label for="kosMesa" class="field-label">Del mesa</label>
+            <select id="kosMesa" class="field" onchange="posodobiCenoPrikaz()"></select>
+          </div>
+          <div>
+            <label for="teza" class="field-label">Teža (kg)</label>
+            <input type="number" id="teza" step="0.01" min="0" placeholder="npr. 2.5" class="field">
+          </div>
         </div>
-        <button onclick="dodajNovKosMesa()" class="w-full bg-slate-800 hover:bg-slate-900 text-white py-1.5 rounded-md text-xs font-semibold transition">Dodaj na cenik</button>
+        <div class="flex justify-between items-center">
+          <span class="text-xs" style="color:var(--ink-soft)">Cena na kg: <strong id="cenaNaKgPrikaz" class="tabular" style="color:var(--ink)">0.00 €</strong></span>
+          <button onclick="dodajPostavko()" class="btn btn-primary px-3.5 py-1.5 text-xs">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Dodaj postavko
+          </button>
+        </div>
       </div>
 
-      <!-- Seznam obstoječih kosov -->
-      <div class="max-h-60 overflow-y-auto space-y-2 mb-4 pr-1" id="seznamCenika">
-        <!-- JS generira cenik -->
-      </div>
-
-      <div class="flex justify-end gap-2 border-t pt-3">
-        <button onclick="zapriNastavitve()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-1.5 rounded-lg text-xs font-semibold">Zapri</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL: Statistika in Zbirnik -->
-  <div id="modalStatistika" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-xl shadow-xl border border-slate-200 max-w-2xl w-full p-5">
-      <div class="flex justify-between items-center mb-4 border-b pb-2">
-        <h3 class="text-lg font-bold text-slate-900">📊 Skupni pregled mesa in teže</h3>
-        <button onclick="zapriStatistiko()" class="text-slate-400 hover:text-slate-600 text-lg">✕</button>
-      </div>
-
-      <div class="mb-4 flex items-center gap-3">
-        <label for="statistikaDatum" class="text-xs font-semibold text-slate-600">Filtriraj po datumu klanja:</label>
-        <select id="statistikaDatum" onchange="izracunajInPrikaziStatistiko()" class="text-xs p-1.5 border border-slate-300 rounded-lg bg-white">
-          <option value="vsi">Vsa klanja skupaj</option>
-        </select>
-      </div>
-
-      <div class="overflow-x-auto max-h-72 border border-slate-200 rounded-lg mb-4">
-        <table class="w-full text-left border-collapse text-xs">
-          <thead class="bg-slate-100 text-slate-600 border-b">
-            <tr>
-              <th class="py-2.5 px-3">Kos mesa</th>
-              <th class="py-2.5 px-3 text-right">Skupna teža (kg)</th>
-              <th class="py-2.5 px-3 text-right">Povprečna cena (€/kg)</th>
-              <th class="py-2.5 px-3 text-right">Skupna vrednost (€)</th>
+      <div class="mb-2 overflow-x-auto">
+        <table class="rtable w-full text-left border-collapse text-xs">
+          <thead>
+            <tr class="border-b" style="color:var(--ink-soft);background:var(--surface-alt)">
+              <th class="py-2 px-1">Kos mesa</th><th class="py-2 px-1 text-right">Cena/kg</th>
+              <th class="py-2 px-1 text-right">Teža</th><th class="py-2 px-1 text-right">Skupaj</th><th class="py-2 px-1 text-center"></th>
             </tr>
           </thead>
-          <tbody id="tabelaStatistike" class="divide-y divide-slate-100">
-            <!-- JS napolni statistiko -->
+          <tbody id="tabelaPostavk">
+            <tr><td colspan="5"><div class="empty">
+              <svg class="icon" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
+              Niste še dodali postavk.</div></td></tr>
           </tbody>
-          <tfoot class="bg-slate-50 font-bold border-t border-slate-300 text-slate-900">
-            <tr>
-              <td class="py-2.5 px-3">SKUPAJ:</td>
-              <td id="statSkupnaTeza" class="py-2.5 px-3 text-right text-blue-700">0.00 kg</td>
-              <td class="py-2.5 px-3"></td>
-              <td id="statSkupnaVrednost" class="py-2.5 px-3 text-right text-green-700">0.00 €</td>
-            </tr>
-          </tfoot>
         </table>
       </div>
+    </div>
 
-      <div class="flex justify-end">
-        <button onclick="zapriStatistiko()" class="bg-slate-800 text-white px-4 py-1.5 rounded-lg text-xs font-semibold">Zapri</button>
+    <div class="border-t pt-3 flex justify-between items-center mt-2" style="border-color:var(--border)">
+      <div>
+        <span class="text-xs block" style="color:var(--ink-soft)">Skupaj za plačilo</span>
+        <span id="skupajZaPlacilo" class="text-xl font-bold tabular" style="color:var(--total)">0.00 €</span>
+      </div>
+      <div class="flex gap-2">
+        <button id="btnPrekliciUrejanje" onclick="prekliciUrejanje()" class="hidden btn btn-ghost px-3 py-2 text-xs">Prekliči</button>
+        <button onclick="shraniRacun()" class="btn btn-primary px-4 py-2 text-sm">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg> Shrani račun
+        </button>
       </div>
     </div>
   </div>
 
-  <script>
-    // Privzeti cenik mesa (€/kg)
-    let cenik = JSON.parse(localStorage.getItem('mesnica_cenik')) || {
-      "Kare": 12,
-      "Stegno": 13,
-      "Stegno s kostmi": 12,
-      "Pleče": 10,
-      "Vrat": 10,
-      "Rebra": 8,
-      "Flam": 8,
-      "Prsa": 8,
-      "Kosti": 2,
-      "Faširano": 10
+  <!-- DESNI STOLPEC -->
+  <div class="lg:col-span-6 card p-5">
+    <div class="flex flex-wrap justify-between items-center mb-3 border-b pb-2 gap-2" style="border-color:var(--border)">
+      <h2 class="text-lg font-brand font-bold">Shranjeni računi</h2>
+      <div class="flex gap-2 w-full sm:w-auto">
+        <select id="filterDatum" onchange="prikaziShranjeneRacune()" class="field text-xs py-1.5"><option value="vsi">Vsi datumi</option></select>
+        <input type="text" id="iskanje" oninput="prikaziShranjeneRacune()" placeholder="Išči po priimku..." class="field text-xs py-1.5 w-full sm:w-32">
+      </div>
+    </div>
+    <div id="seznamRacunov" class="space-y-3 max-h-[560px] overflow-y-auto pr-1"></div>
+  </div>
+</div>
+
+<!-- MODAL: Nastavitve -->
+<div id="modalNastavitve" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+  <div class="card shadow-xl max-w-md w-full p-5 max-h-[90vh] overflow-y-auto">
+    <div class="flex justify-between items-center mb-4 border-b pb-2" style="border-color:var(--border)">
+      <h3 class="text-lg font-brand font-bold">Urejanje cenika mesa</h3>
+      <button onclick="zapriNastavitve()" class="btn-danger-text text-lg leading-none">
+        <svg class="icon" style="width:20px;height:20px" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <div class="p-3 rounded-xl mb-4" style="background:var(--surface-alt);border:1px solid var(--border)">
+      <h4 class="text-xs font-semibold mb-2" style="color:var(--ink-soft)">Dodaj nov kos mesa</h4>
+      <div class="grid grid-cols-2 gap-2 mb-2">
+        <input type="text" id="novKosIme" placeholder="Npr. Pljučna" class="field text-xs py-1.5">
+        <input type="number" id="novKosCena" step="0.5" placeholder="Cena (€/kg)" class="field text-xs py-1.5">
+      </div>
+      <button onclick="dodajNovKosMesa()" class="btn btn-primary w-full py-1.5 text-xs justify-center">Dodaj na cenik</button>
+    </div>
+
+    <div class="max-h-60 overflow-y-auto space-y-2 mb-4 pr-1" id="seznamCenika"></div>
+
+    <div class="pt-3 border-t" style="border-color:var(--border)">
+      <h4 class="text-xs font-semibold mb-2" style="color:var(--ink-soft)">Varnostna kopija podatkov</h4>
+      <p class="text-[11px] mb-2" style="color:var(--ink-soft)">Podatki so shranjeni le v tem brskalniku. Redno naredite izvoz, da jih ne izgubite.</p>
+      <div class="flex gap-2">
+        <button onclick="exportPodatki()" class="btn btn-ghost flex-1 py-1.5 text-xs justify-center">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M5 21h14"/></svg> Izvozi (backup)
+        </button>
+        <button onclick="document.getElementById('uvozInput').click()" class="btn btn-ghost flex-1 py-1.5 text-xs justify-center">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M12 21V9M7 14l5-5 5 5"/><path d="M5 3h14"/></svg> Uvozi
+        </button>
+        <input type="file" id="uvozInput" accept="application/json" class="hidden" onchange="importPodatki(event)">
+      </div>
+    </div>
+
+    <div class="flex justify-end gap-2 border-t pt-3 mt-3" style="border-color:var(--border)">
+      <button onclick="zapriNastavitve()" class="btn btn-ghost px-4 py-1.5 text-xs">Zapri</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Statistika -->
+<div id="modalStatistika" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+  <div class="card shadow-xl max-w-2xl w-full p-5">
+    <div class="flex justify-between items-center mb-4 border-b pb-2" style="border-color:var(--border)">
+      <h3 class="text-lg font-brand font-bold">Skupni pregled mesa in teže</h3>
+      <button onclick="zapriStatistiko()" class="btn-danger-text">
+        <svg class="icon" style="width:20px;height:20px" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="mb-4 flex items-center gap-3">
+      <label for="statistikaDatum" class="text-xs font-semibold" style="color:var(--ink-soft)">Filtriraj po datumu klanja:</label>
+      <select id="statistikaDatum" onchange="izracunajInPrikaziStatistiko()" class="field text-xs py-1.5 w-auto"><option value="vsi">Vsa klanja skupaj</option></select>
+    </div>
+    <div class="overflow-x-auto max-h-72 rounded-xl mb-4" style="border:1px solid var(--border)">
+      <table class="rtable w-full text-left border-collapse text-xs">
+        <thead style="background:var(--surface-alt);color:var(--ink-soft)"><tr class="border-b" style="border-color:var(--border)">
+          <th class="py-2.5 px-3">Kos mesa</th><th class="py-2.5 px-3 text-right">Skupna teža (kg)</th>
+          <th class="py-2.5 px-3 text-right">Cena (€/kg)</th><th class="py-2.5 px-3 text-right">Skupna vrednost (€)</th>
+        </tr></thead>
+        <tbody id="tabelaStatistike"></tbody>
+        <tfoot class="font-bold border-t" style="background:var(--surface-alt);border-color:var(--border)">
+          <tr><td class="py-2.5 px-3">SKUPAJ:</td>
+            <td id="statSkupnaTeza" class="py-2.5 px-3 text-right tabular" style="color:var(--info)">0.00 kg</td>
+            <td class="py-2.5 px-3"></td>
+            <td id="statSkupnaVrednost" class="py-2.5 px-3 text-right tabular" style="color:var(--success)">0.00 €</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    <div class="flex justify-end"><button onclick="zapriStatistiko()" class="btn btn-primary px-4 py-1.5 text-xs">Zapri</button></div>
+  </div>
+</div>
+
+<!-- Skriti tiskalni predogled -->
+<div id="printArea"></div>
+
+<script>
+  let cenik = JSON.parse(localStorage.getItem('mesnica_cenik')) || {
+    "Kare":12,"Stegno":13,"Stegno s kostmi":12,"Pleče":10,"Vrat":10,"Rebra":8,"Flam":8,"Prsa":8,"Kosti":2,"Faširano":10
+  };
+  let trenutnePostavke = [];
+  let shranjeniRacuni = JSON.parse(localStorage.getItem('mesnica_racuni')) || [];
+  let idUrejevanja = null;
+
+  window.onload = () => {
+    document.getElementById('datumKlanja').value = new Date().toISOString().split('T')[0];
+    napolniIzbiroMesa(); posodobiCenoPrikaz(); osveziFiltreDatumov(); prikaziShranjeneRacune();
+  };
+
+  // --- TOAST ---
+  function toast(sporocilo, tip='success'){
+    const wrap = document.getElementById('toastWrap');
+    const el = document.createElement('div');
+    el.className = `toast toast-${tip}`;
+    const icone = {
+      success: '<svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.2 2.2L16 9.3"/></svg>',
+      danger: '<svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>',
+      info: '<svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M12 11v5"/></svg>'
     };
+    el.innerHTML = `${icone[tip]||icone.success}<span>${sporocilo}</span>`;
+    wrap.appendChild(el);
+    setTimeout(()=>{ el.style.opacity='0'; el.style.transition='opacity .25s'; setTimeout(()=>el.remove(),250); }, 3000);
+  }
 
-    let trenutnePostavke = [];
-    let shranjeniRacuni = JSON.parse(localStorage.getItem('mesnica_racuni')) || [];
-    let idUrejevanja = null; // Zadrži ID računa, če poteka urejanje
+  function shraniCenikVShrambo(){ localStorage.setItem('mesnica_cenik', JSON.stringify(cenik)); }
 
-    window.onload = () => {
-      // Nastavi privzeti današnji datum
-      document.getElementById('datumKlanja').value = new Date().toISOString().split('T')[0];
-      
-      napolniIzbiroMesa();
-      posodobiCenoPrikaz();
-      osveziFiltreDatumov();
-      prikaziShranjeneRacune();
-    };
+  function napolniIzbiroMesa(){
+    const select = document.getElementById('kosMesa'); select.innerHTML='';
+    Object.keys(cenik).forEach(kos=>{
+      const o=document.createElement('option'); o.value=kos; o.textContent=`${kos} (${cenik[kos].toFixed(2)} €/kg)`; select.appendChild(o);
+    });
+    posodobiCenoPrikaz();
+  }
 
-    function shraniCenikVShrambo() {
-      localStorage.setItem('mesnica_cenik', JSON.stringify(cenik));
+  function posodobiCenoPrikaz(){
+    const izbranKos = document.getElementById('kosMesa').value;
+    if(izbranKos && cenik[izbranKos]!==undefined) document.getElementById('cenaNaKgPrikaz').textContent = `${cenik[izbranKos].toFixed(2)} €`;
+  }
+
+  function dodajPostavko(){
+    const kos = document.getElementById('kosMesa').value;
+    const teza = parseFloat(document.getElementById('teza').value);
+    if(!kos){ toast('Izberite kos mesa.','danger'); return; }
+    if(isNaN(teza)||teza<=0){ toast('Vnesite veljavno težo.','danger'); return; }
+    const cenaNaKg = cenik[kos]; const skupnaCena = teza*cenaNaKg;
+    trenutnePostavke.push({kos,cenaNaKg,teza,skupnaCena});
+    document.getElementById('teza').value=''; osveziTabeloPostavk();
+  }
+
+  function odstraniPostavko(index){ trenutnePostavke.splice(index,1); osveziTabeloPostavk(); }
+
+  function osveziTabeloPostavk(){
+    const tbody = document.getElementById('tabelaPostavk'); tbody.innerHTML='';
+    if(trenutnePostavke.length===0){
+      tbody.innerHTML = `<tr><td colspan="5"><div class="empty"><svg class="icon" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10"/></svg>Niste še dodali postavk.</div></td></tr>`;
+      document.getElementById('skupajZaPlacilo').textContent='0.00 €'; return;
     }
+    let skupaj=0;
+    trenutnePostavke.forEach((p,index)=>{
+      skupaj += p.skupnaCena;
+      const tr=document.createElement('tr'); tr.className="border-b"; tr.style.borderColor='var(--border)';
+      tr.innerHTML = `
+        <td data-label="Kos" class="py-2 px-1 font-medium">${p.kos}</td>
+        <td data-label="Cena/kg" class="py-2 px-1 text-right tabular">${p.cenaNaKg.toFixed(2)} €</td>
+        <td data-label="Teža" class="py-2 px-1 text-right tabular">${p.teza.toFixed(2)} kg</td>
+        <td data-label="Skupaj" class="py-2 px-1 text-right font-semibold tabular">${p.skupnaCena.toFixed(2)} €</td>
+        <td class="py-2 px-1 text-center no-label"><button onclick="odstraniPostavko(${index})" class="btn-danger-text text-xs px-1">✕</button></td>`;
+      tbody.appendChild(tr);
+    });
+    document.getElementById('skupajZaPlacilo').textContent = `${skupaj.toFixed(2)} €`;
+  }
 
-    function napolniIzbiroMesa() {
-      const select = document.getElementById('kosMesa');
-      select.innerHTML = '';
-      Object.keys(cenik).forEach(kos => {
-        const option = document.createElement('option');
-        option.value = kos;
-        option.textContent = `${kos} (${cenik[kos].toFixed(2)} €/kg)`;
-        select.appendChild(option);
-      });
-      posodobiCenoPrikaz();
+  function shraniRacun(){
+    const priimek = document.getElementById('priimek').value.trim();
+    const datumKlanja = document.getElementById('datumKlanja').value;
+    const opombe = document.getElementById('opombe').value.trim();
+    if(!priimek){ toast('Vnesite priimek stranke.','danger'); return; }
+    if(!datumKlanja){ toast('Izberite datum klanja.','danger'); return; }
+    if(trenutnePostavke.length===0){ toast('Račun mora vsebovati vsaj eno postavko.','danger'); return; }
+    const skupnaVrednost = trenutnePostavke.reduce((s,p)=>s+p.skupnaCena,0);
+    if(idUrejevanja){
+      const idx = shranjeniRacuni.findIndex(r=>r.id===idUrejevanja);
+      if(idx!==-1) shranjeniRacuni[idx] = {...shranjeniRacuni[idx], priimek, datumKlanja, opombe, postavke:[...trenutnePostavke], skupaj:skupnaVrednost};
+      prekliciUrejanje(); toast('Račun posodobljen.');
+    } else {
+      shranjeniRacuni.unshift({id:Date.now(), priimek, datumKlanja, opombe, vnesenoDatum:new Date().toLocaleDateString('sl-SI'), postavke:[...trenutnePostavke], skupaj:skupnaVrednost});
+      toast('Račun shranjen.');
     }
+    localStorage.setItem('mesnica_racuni', JSON.stringify(shranjeniRacuni));
+    document.getElementById('priimek').value=''; document.getElementById('opombe').value='';
+    trenutnePostavke=[]; osveziTabeloPostavk(); osveziFiltreDatumov(); prikaziShranjeneRacune();
+  }
 
-    function posodobiCenoPrikaz() {
-      const izbranKos = document.getElementById('kosMesa').value;
-      if (izbranKos && cenik[izbranKos] !== undefined) {
-        document.getElementById('cenaNaKgPrikaz').textContent = `${cenik[izbranKos].toFixed(2)} €`;
-      }
-    }
+  function urediRacun(id){
+    const racun = shranjeniRacuni.find(r=>r.id===id); if(!racun) return;
+    idUrejevanja=id;
+    document.getElementById('priimek').value = racun.priimek;
+    document.getElementById('datumKlanja').value = racun.datumKlanja || new Date().toISOString().split('T')[0];
+    document.getElementById('opombe').value = racun.opombe || '';
+    trenutnePostavke = JSON.parse(JSON.stringify(racun.postavke));
+    osveziTabeloPostavk();
+    document.getElementById('naslovObrazca').textContent = "Uredi Račun";
+    document.getElementById('urejanjeBadge').classList.remove('hidden');
+    document.getElementById('btnPrekliciUrejanje').classList.remove('hidden');
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
 
-    function dodajPostavko() {
-      const kos = document.getElementById('kosMesa').value;
-      const teza = parseFloat(document.getElementById('teza').value);
-      
-      if (!kos) {
-        alert("Izberite kos mesa!");
-        return;
-      }
+  function prekliciUrejanje(){
+    idUrejevanja=null;
+    document.getElementById('priimek').value=''; document.getElementById('opombe').value='';
+    trenutnePostavke=[]; osveziTabeloPostavk();
+    document.getElementById('naslovObrazca').textContent = "Novi Račun";
+    document.getElementById('urejanjeBadge').classList.add('hidden');
+    document.getElementById('btnPrekliciUrejanje').classList.add('hidden');
+  }
 
-      if (isNaN(teza) || teza <= 0) {
-        alert("Vnesite veljavno težo!");
-        return;
-      }
-
-      const cenaNaKg = cenik[kos];
-      const skupnaCena = teza * cenaNaKg;
-
-      trenutnePostavke.push({
-        kos: kos,
-        cenaNaKg: cenaNaKg,
-        teza: teza,
-        skupnaCena: skupnaCena
-      });
-
-      document.getElementById('teza').value = '';
-      osveziTabeloPostavk();
-    }
-
-    function odstraniPostavko(index) {
-      trenutnePostavke.splice(index, 1);
-      osveziTabeloPostavk();
-    }
-
-    function osveziTabeloPostavk() {
-      const tbody = document.getElementById('tabelaPostavk');
-      tbody.innerHTML = '';
-
-      if (trenutnePostavke.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-slate-400 italic">Niste še dodali postavk.</td></tr>`;
-        document.getElementById('skupajZaPlacilo').textContent = '0.00 €';
-        return;
-      }
-
-      let skupaj = 0;
-
-      trenutnePostavke.forEach((postavka, index) => {
-        skupaj += postavka.skupnaCena;
-        const tr = document.createElement('tr');
-        tr.className = "border-b border-slate-100 hover:bg-slate-50";
-        tr.innerHTML = `
-          <td class="py-2 px-1 font-medium">${postavka.kos}</td>
-          <td class="py-2 px-1 text-right">${postavka.cenaNaKg.toFixed(2)} €</td>
-          <td class="py-2 px-1 text-right">${postavka.teza.toFixed(2)} kg</td>
-          <td class="py-2 px-1 text-right font-semibold">${postavka.skupnaCena.toFixed(2)} €</td>
-          <td class="py-2 px-1 text-center">
-            <button onclick="odstraniPostavko(${index})" class="text-red-500 hover:text-red-700 text-xs font-bold px-1">✕</button>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
-
-      document.getElementById('skupajZaPlacilo').textContent = `${skupaj.toFixed(2)} €`;
-    }
-
-    function shraniRacun() {
-      const priimek = document.getElementById('priimek').value.trim();
-      const datumKlanja = document.getElementById('datumKlanja').value;
-
-      if (!priimek) {
-        alert("Vnesite priimek stranke!");
-        return;
-      }
-
-      if (!datumKlanja) {
-        alert("Izberite datum klanja!");
-        return;
-      }
-
-      if (trenutnePostavke.length === 0) {
-        alert("Račun mora vsebovati vsaj eno postavko!");
-        return;
-      }
-
-      const skupnaVrednost = trenutnePostavke.reduce((sum, p) => sum + p.skupnaCena, 0);
-
-      if (idUrejevanja) {
-        // Posodobitev obstoječega računa
-        const idx = shranjeniRacuni.findIndex(r => r.id === idUrejevanja);
-        if (idx !== -1) {
-          shranjeniRacuni[idx] = {
-            ...shranjeniRacuni[idx],
-            priimek: priimek,
-            datumKlanja: datumKlanja,
-            postavke: [...trenutnePostavke],
-            skupaj: skupnaVrednost
-          };
-        }
-        prekliciUrejanje();
-      } else {
-        // Ustvarjanje novega računa
-        const novRacun = {
-          id: Date.now(),
-          priimek: priimek,
-          datumKlanja: datumKlanja,
-          vnesenoDatum: new Date().toLocaleDateString('sl-SI'),
-          postavke: [...trenutnePostavke],
-          skupaj: skupnaVrednost
-        };
-        shranjeniRacuni.unshift(novRacun);
-      }
-
+  function izbrisiRacun(id){
+    if(confirm("Res želiš izbrisati ta račun?")){
+      shranjeniRacuni = shranjeniRacuni.filter(r=>r.id!==id);
       localStorage.setItem('mesnica_racuni', JSON.stringify(shranjeniRacuni));
-
-      // Ponastavi vnosna polja
-      document.getElementById('priimek').value = '';
-      trenutnePostavke = [];
-      osveziTabeloPostavk();
-      osveziFiltreDatumov();
-      prikaziShranjeneRacune();
+      if(idUrejevanja===id) prekliciUrejanje();
+      osveziFiltreDatumov(); prikaziShranjeneRacune(); toast('Račun izbrisan.','info');
     }
+  }
 
-    function urediRacun(id) {
-      const racun = shranjeniRacuni.find(r => r.id === id);
-      if (!racun) return;
+  function osveziFiltreDatumov(){
+    const datumi=[...new Set(shranjeniRacuni.map(r=>r.datumKlanja).filter(Boolean))].sort().reverse();
+    const filterSelect=document.getElementById('filterDatum'), statSelect=document.getElementById('statistikaDatum');
+    const trF=filterSelect.value, trS=statSelect.value;
+    filterSelect.innerHTML='<option value="vsi">Vsi datumi klanja</option>';
+    statSelect.innerHTML='<option value="vsi">Vsa klanja skupaj</option>';
+    datumi.forEach(d=>{ const l=urediPrikazDatuma(d); filterSelect.innerHTML+=`<option value="${d}">${l}</option>`; statSelect.innerHTML+=`<option value="${d}">${l}</option>`; });
+    filterSelect.value=trF; statSelect.value=trS;
+  }
 
-      idUrejevanja = id;
-      document.getElementById('priimek').value = racun.priimek;
-      document.getElementById('datumKlanja').value = racun.datumKlanja || new Date().toISOString().split('T')[0];
-      
-      trenutnePostavke = JSON.parse(JSON.stringify(racun.postavke));
-      osveziTabeloPostavk();
+  function urediPrikazDatuma(dStr){ if(!dStr) return ''; const p=dStr.split('-'); return p.length===3 ? `${p[2]}.${p[1]}.${p[0]}` : dStr; }
 
-      document.getElementById('naslovObrazca').textContent = "Uredi Račun";
-      document.getElementById('urejanjeBadge').classList.remove('hidden');
-      document.getElementById('btnPrekliciUrejanje').classList.remove('hidden');
-      
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+  function prikaziShranjeneRacune(){
+    const seznam=document.getElementById('seznamRacunov');
+    const iskanje=document.getElementById('iskanje').value.toLowerCase();
+    const izbranDatum=document.getElementById('filterDatum').value;
+    seznam.innerHTML='';
+    const filtrirani = shranjeniRacuni.filter(r=>{
+      const ujemaBesedilo = r.priimek.toLowerCase().includes(iskanje) || (r.opombe||'').toLowerCase().includes(iskanje);
+      const ujemaDatum = izbranDatum==='vsi' || r.datumKlanja===izbranDatum;
+      return ujemaBesedilo && ujemaDatum;
+    });
+    if(filtrirani.length===0){
+      seznam.innerHTML = `<div class="empty"><svg class="icon" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Ni shranjenih računov za izbrane pogoje.</div>`;
+      return;
     }
-
-    function prekliciUrejanje() {
-      idUrejevanja = null;
-      document.getElementById('priimek').value = '';
-      trenutnePostavke = [];
-      osveziTabeloPostavk();
-
-      document.getElementById('naslovObrazca').textContent = "Novi Račun";
-      document.getElementById('urejanjeBadge').classList.add('hidden');
-      document.getElementById('btnPrekliciUrejanje').classList.add('hidden');
-    }
-
-    function izbrisiRacun(id) {
-      if (confirm("Res želiš izbrisati ta račun?")) {
-        shranjeniRacuni = shranjeniRacuni.filter(r => r.id !== id);
-        localStorage.setItem('mesnica_racuni', JSON.stringify(shranjeniRacuni));
-        if (idUrejevanja === id) prekliciUrejanje();
-        osveziFiltreDatumov();
-        prikaziShranjeneRacune();
-      }
-    }
-
-    function osveziFiltreDatumov() {
-      const datumi = [...new Set(shranjeniRacuni.map(r => r.datumKlanja).filter(Boolean))].sort().reverse();
-      
-      const filterSelect = document.getElementById('filterDatum');
-      const statSelect = document.getElementById('statistikaDatum');
-      
-      const trenutnaIzbiraFilter = filterSelect.value;
-      const trenutnaIzbiraStat = statSelect.value;
-
-      filterSelect.innerHTML = '<option value="vsi">Vsi datumi klanja</option>';
-      statSelect.innerHTML = '<option value="vsi">Vsa klanja skupaj</option>';
-
-      datumi.forEach(d => {
-        const lepsiDatum = urediPrikazDatuma(d);
-        filterSelect.innerHTML += `<option value="${d}">${lepsiDatum}</option>`;
-        statSelect.innerHTML += `<option value="${d}">${lepsiDatum}</option>`;
-      });
-
-      filterSelect.value = trenutnaIzbiraFilter;
-      statSelect.value = trenutnaIzbiraStat;
-    }
-
-    function urediPrikazDatuma(dStr) {
-      if (!dStr) return '';
-      const parts = dStr.split('-');
-      if (parts.length === 3) return `${parts[2]}.${parts[1]}.${parts[0]}`;
-      return dStr;
-    }
-
-    function prikaziShranjeneRacune() {
-      const seznam = document.getElementById('seznamRacunov');
-      const iskanje = document.getElementById('iskanje').value.toLowerCase();
-      const izbranDatum = document.getElementById('filterDatum').value;
-      
-      seznam.innerHTML = '';
-
-      const filtrirani = shranjeniRacuni.filter(r => {
-        const ujemaPriimek = r.priimek.toLowerCase().includes(iskanje);
-        const ujemaDatum = izbranDatum === 'vsi' || r.datumKlanja === izbranDatum;
-        return ujemaPriimek && ujemaDatum;
-      });
-
-      if (filtrirani.length === 0) {
-        seznam.innerHTML = `<p class="text-slate-400 text-center italic py-6">Ni shranjenih računov za izbrane pogoje.</p>`;
-        return;
-      }
-
-      filtrirani.forEach(racun => {
-        const div = document.createElement('div');
-        div.className = "p-3.5 bg-slate-50 border border-slate-200 rounded-lg text-xs hover:border-slate-300 transition";
-        
-        let postavkeHtml = racun.postavke.map(p => 
-          `<li class="flex justify-between text-slate-600 border-b border-slate-100 last:border-0 py-0.5">
-            <span>${p.kos} <strong class="text-slate-800">(${p.teza} kg)</strong></span>
-            <span>${p.skupnaCena.toFixed(2)} €</span>
-          </li>`
-        ).join('');
-
-        div.innerHTML = `
-          <div class="flex justify-between items-start mb-1.5">
-            <div>
-              <strong class="text-sm font-bold text-slate-900">${racun.priimek}</strong>
-              <div class="text-[11px] text-slate-500">
-                <span>Klanje: <strong class="text-slate-700">${urediPrikazDatuma(racun.datumKlanja)}</strong></span>
-              </div>
-            </div>
-            <div class="text-right">
-              <span class="font-bold text-green-700 text-sm block">${racun.skupaj.toFixed(2)} €</span>
-              <div class="flex gap-2 mt-1">
-                <button onclick="urediRacun(${racun.id})" class="text-blue-600 hover:text-blue-800 font-semibold underline text-[11px]">Uredi</button>
-                <button onclick="izbrisiRacun(${racun.id})" class="text-red-500 hover:text-red-700 underline text-[11px]">Izbriši</button>
-              </div>
+    filtrirani.forEach(racun=>{
+      const div=document.createElement('div');
+      div.className="p-3.5 rounded-xl text-xs transition"; div.style.background='var(--surface-alt)'; div.style.border='1px solid var(--border)';
+      const postavkeHtml = racun.postavke.map(p=>`<li class="flex justify-between py-0.5 border-b last:border-0" style="color:var(--ink-soft);border-color:var(--border)"><span>${p.kos} <strong style="color:var(--ink)">(${p.teza} kg)</strong></span><span class="tabular">${p.skupnaCena.toFixed(2)} €</span></li>`).join('');
+      const opombeHtml = racun.opombe ? `<p class="mt-1.5 text-[11px] italic" style="color:var(--ink-soft)">📝 ${racun.opombe}</p>` : '';
+      div.innerHTML = `
+        <div class="flex justify-between items-start mb-1.5">
+          <div>
+            <strong class="text-sm font-bold">${racun.priimek}</strong>
+            <div class="text-[11px]" style="color:var(--ink-soft)">Klanje: <strong style="color:var(--ink)">${urediPrikazDatuma(racun.datumKlanja)}</strong></div>
+          </div>
+          <div class="text-right">
+            <span class="font-bold text-sm block tabular" style="color:var(--total)">${racun.skupaj.toFixed(2)} €</span>
+            <div class="flex gap-2 mt-1 justify-end">
+              <button onclick="natisniRacun(${racun.id})" class="btn-link text-[11px]">Natisni</button>
+              <button onclick="urediRacun(${racun.id})" class="btn-link text-[11px]">Uredi</button>
+              <button onclick="izbrisiRacun(${racun.id})" class="btn-danger-text text-[11px]">Izbriši</button>
             </div>
           </div>
-          <ul class="bg-white p-2 rounded border border-slate-200 space-y-0.5 mt-1">
-            ${postavkeHtml}
-          </ul>
-        `;
-        seznam.appendChild(div);
-      });
+        </div>
+        <ul class="p-2 rounded-lg mt-1" style="background:var(--surface);border:1px solid var(--border)">${postavkeHtml}</ul>
+        ${opombeHtml}`;
+      seznam.appendChild(div);
+    });
+  }
+
+  // --- NASTAVITVE CENIKA ---
+  function odpriNastavitve(){ prikaziCenikVNastavitvah(); document.getElementById('modalNastavitve').classList.remove('hidden'); document.getElementById('modalNastavitve').classList.add('flex'); }
+  function zapriNastavitve(){ document.getElementById('modalNastavitve').classList.add('hidden'); document.getElementById('modalNastavitve').classList.remove('flex'); napolniIzbiroMesa(); }
+
+  function prikaziCenikVNastavitvah(){
+    const container=document.getElementById('seznamCenika'); container.innerHTML='';
+    Object.keys(cenik).forEach(kos=>{
+      const div=document.createElement('div');
+      div.className="flex items-center justify-between p-2 rounded-lg text-xs"; div.style.background='var(--surface-alt)'; div.style.border='1px solid var(--border)';
+      div.innerHTML = `<span class="font-medium">${kos}</span>
+        <div class="flex items-center gap-1">
+          <input type="number" step="0.5" value="${cenik[kos]}" onchange="posodobiCenoMesa('${kos}', this.value)" class="field w-16 py-1 text-right">
+          <span style="color:var(--ink-soft)">€/kg</span>
+          <button onclick="izbrisiKosMesa('${kos}')" class="btn-danger-text ml-1 font-bold">✕</button>
+        </div>`;
+      container.appendChild(div);
+    });
+  }
+
+  function posodobiCenoMesa(kos, novaCena){
+    const val=parseFloat(novaCena);
+    if(!isNaN(val)&&val>=0){ cenik[kos]=val; shraniCenikVShrambo(); toast(`Cena za "${kos}" posodobljena.`,'info'); }
+  }
+
+  function izbrisiKosMesa(kos){
+    if(confirm(`Res želiš odstraniti kos "${kos}" iz cenika?`)){
+      delete cenik[kos]; shraniCenikVShrambo(); prikaziCenikVNastavitvah(); toast('Kos odstranjen iz cenika.','info');
     }
+  }
 
-    // --- NASTAVITVE CENIKA ---
-    function odpriNastavitve() {
-      prikaziCenikVNastavitvah();
-      document.getElementById('modalNastavitve').classList.remove('hidden');
-      document.getElementById('modalNastavitve').classList.add('flex');
-    }
+  function dodajNovKosMesa(){
+    const ime=document.getElementById('novKosIme').value.trim();
+    const cena=parseFloat(document.getElementById('novKosCena').value);
+    if(!ime){ toast('Vnesite naziv kosa mesa.','danger'); return; }
+    if(isNaN(cena)||cena<0){ toast('Vnesite veljavno ceno.','danger'); return; }
+    cenik[ime]=cena; shraniCenikVShrambo();
+    document.getElementById('novKosIme').value=''; document.getElementById('novKosCena').value='';
+    prikaziCenikVNastavitvah(); toast(`"${ime}" dodan na cenik.`);
+  }
 
-    function zapriNastavitve() {
-      document.getElementById('modalNastavitve').classList.add('hidden');
-      document.getElementById('modalNastavitve').classList.remove('flex');
-      napolniIzbiroMesa();
-    }
+  // --- BACKUP: IZVOZ / UVOZ ---
+  function exportPodatki(){
+    const podatki = {vrsta:'obracun-mesa-backup', datum:new Date().toISOString(), cenik, racuni:shranjeniRacuni};
+    const blob = new Blob([JSON.stringify(podatki,null,2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `obracun-mesa-backup-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    toast('Varnostna kopija izvožena.');
+  }
 
-    function prikaziCenikVNastavitvah() {
-      const container = document.getElementById('seznamCenika');
-      container.innerHTML = '';
+  function importPodatki(event){
+    const file = event.target.files[0]; if(!file) return;
+    const reader = new FileReader();
+    reader.onload = (e)=>{
+      try{
+        const podatki = JSON.parse(e.target.result);
+        if(!podatki.cenik || !Array.isArray(podatki.racuni)) throw new Error('napačna oblika');
+        if(!confirm('Uvoz bo prepisal trenutni cenik in vse shranjene račune s podatki iz datoteke. Nadaljuješ?')) return;
+        cenik = podatki.cenik; shranjeniRacuni = podatki.racuni;
+        shraniCenikVShrambo(); localStorage.setItem('mesnica_racuni', JSON.stringify(shranjeniRacuni));
+        prikaziCenikVNastavitvah(); napolniIzbiroMesa(); osveziFiltreDatumov(); prikaziShranjeneRacune();
+        toast('Podatki uspešno uvoženi.');
+      }catch(err){ toast('Datoteka ni veljavna varnostna kopija.','danger'); }
+      finally{ event.target.value=''; }
+    };
+    reader.readAsText(file);
+  }
 
-      Object.keys(cenik).forEach(kos => {
-        const div = document.createElement('div');
-        div.className = "flex items-center justify-between bg-slate-50 p-2 rounded border border-slate-200 text-xs";
-        div.innerHTML = `
-          <span class="font-medium text-slate-800">${kos}</span>
-          <div class="flex items-center gap-1">
-            <input type="number" step="0.5" value="${cenik[kos]}" onchange="posodobiCenoMesa('${kos}', this.value)" class="w-16 p-1 border border-slate-300 rounded text-right">
-            <span class="text-slate-500">€/kg</span>
-            <button onclick="izbrisiKosMesa('${kos}')" class="text-red-500 hover:text-red-700 ml-1 font-bold">✕</button>
-          </div>
-        `;
-        container.appendChild(div);
-      });
-    }
+  // --- TISK RAČUNA ---
+  function natisniRacun(id){
+    const r = shranjeniRacuni.find(x=>x.id===id); if(!r) return;
+    const vrstice = r.postavke.map(p=>`<tr><td style="padding:6px 4px;border-bottom:1px solid #ddd">${p.kos}</td><td style="padding:6px 4px;border-bottom:1px solid #ddd;text-align:right">${p.cenaNaKg.toFixed(2)} €</td><td style="padding:6px 4px;border-bottom:1px solid #ddd;text-align:right">${p.teza.toFixed(2)} kg</td><td style="padding:6px 4px;border-bottom:1px solid #ddd;text-align:right">${p.skupnaCena.toFixed(2)} €</td></tr>`).join('');
+    document.getElementById('printArea').innerHTML = `
+      <div style="font-family:Georgia,serif;max-width:600px;margin:0 auto">
+        <h1 style="font-size:20px;margin-bottom:2px">Obračun Mesa</h1>
+        <p style="font-size:12px;color:#555;margin-top:0">Evidenca klanja</p>
+        <hr style="margin:12px 0">
+        <p style="font-size:13px"><strong>Stranka:</strong> ${r.priimek}</p>
+        <p style="font-size:13px"><strong>Datum klanja:</strong> ${urediPrikazDatuma(r.datumKlanja)}</p>
+        ${r.opombe ? `<p style="font-size:13px"><strong>Opombe:</strong> ${r.opombe}</p>` : ''}
+        <table style="width:100%;border-collapse:collapse;margin-top:14px;font-size:13px">
+          <thead><tr style="border-bottom:2px solid #333;text-align:left"><th style="padding:6px 4px">Kos mesa</th><th style="padding:6px 4px;text-align:right">Cena/kg</th><th style="padding:6px 4px;text-align:right">Teža</th><th style="padding:6px 4px;text-align:right">Skupaj</th></tr></thead>
+          <tbody>${vrstice}</tbody>
+        </table>
+        <div style="text-align:right;margin-top:14px;font-size:16px;font-weight:bold">Skupaj za plačilo: ${r.skupaj.toFixed(2)} €</div>
+      </div>`;
+    window.print();
+  }
 
-    function posodobiCenoMesa(kos, novaCena) {
-      const val = parseFloat(novaCena);
-      if (!isNaN(val) && val >= 0) {
-        cenik[kos] = val;
-        shraniCenikVShrambo();
-      }
-    }
+  // --- STATISTIKA ---
+  function odpriStatistiko(){ osveziFiltreDatumov(); izracunajInPrikaziStatistiko(); document.getElementById('modalStatistika').classList.remove('hidden'); document.getElementById('modalStatistika').classList.add('flex'); }
+  function zapriStatistiko(){ document.getElementById('modalStatistika').classList.add('hidden'); document.getElementById('modalStatistika').classList.remove('flex'); }
 
-    function izbrisiKosMesa(kos) {
-      if (confirm(`Res želiš odstraniti kos "${kos}" iz cenika?`)) {
-        delete cenik[kos];
-        shraniCenikVShrambo();
-        prikaziCenikVNastavitvah();
-      }
-    }
-
-    function dodajNovKosMesa() {
-      const ime = document.getElementById('novKosIme').value.trim();
-      const cena = parseFloat(document.getElementById('novKosCena').value);
-
-      if (!ime) {
-        alert("Vnesite naziv kosa mesa!");
-        return;
-      }
-      if (isNaN(cena) || cena < 0) {
-        alert("Vnesite veljavno ceno!");
-        return;
-      }
-
-      cenik[ime] = cena;
-      shraniCenikVShrambo();
-      document.getElementById('novKosIme').value = '';
-      document.getElementById('novKosCena').value = '';
-      prikaziCenikVNastavitvah();
-    }
-
-    // --- STATISTIKA ---
-    function odpriStatistiko() {
-      osveziFiltreDatumov();
-      izracunajInPrikaziStatistiko();
-      document.getElementById('modalStatistika').classList.remove('hidden');
-      document.getElementById('modalStatistika').classList.add('flex');
-    }
-
-    function zapriStatistiko() {
-      document.getElementById('modalStatistika').classList.add('hidden');
-      document.getElementById('modalStatistika').classList.remove('flex');
-    }
-
-    function izracunajInPrikaziStatistiko() {
-      const izbranDatum = document.getElementById('statistikaDatum').value;
-      const zbirnik = {};
-
-      let skupnaTezaVseh = 0;
-      let skupnaVrednostVseh = 0;
-
-      shranjeniRacuni.forEach(racun => {
-        if (izbranDatum === 'vsi' || racun.datumKlanja === izbranDatum) {
-          racun.postavke.forEach(p => {
-            if (!zbirnik[p.kos]) {
-              zbirnik[p.kos] = { teza: 0, vrednost: 0 };
-            }
-            zbirnik[p.kos].teza += p.teza;
-            zbirnik[p.kos].vrednost += p.skupnaCena;
-
-            skupnaTezaVseh += p.teza;
-            skupnaVrednostVseh += p.skupnaCena;
-          });
-        }
-      });
-
-      const tbody = document.getElementById('tabelaStatistike');
-      tbody.innerHTML = '';
-
-      if (Object.keys(zbirnik).length === 0) {
-        tbody.innerHTML = `<tr><td colspan="4" class="py-4 text-center text-slate-400 italic">Ni podatkov za izbran datum.</td></tr>`;
-      } else {
-        Object.keys(zbirnik).forEach(kos => {
-          const teza = zbirnik[kos].teza;
-          const vrednost = zbirnik[kos].vrednost;
-          const povpCena = teza > 0 ? (vrednost / teza) : 0;
-
-          const tr = document.createElement('tr');
-          tr.className = "hover:bg-slate-50";
-          tr.innerHTML = `
-            <td class="py-2 px-3 font-medium text-slate-800">${kos}</td>
-            <td class="py-2 px-3 text-right font-semibold">${teza.toFixed(2)} kg</td>
-            <td class="py-2 px-3 text-right text-slate-500">${povpCena.toFixed(2)} €</td>
-            <td class="py-2 px-3 text-right font-semibold text-slate-900">${vrednost.toFixed(2)} €</td>
-          `;
-          tbody.appendChild(tr);
+  function izracunajInPrikaziStatistiko(){
+    const izbranDatum = document.getElementById('statistikaDatum').value;
+    const zbirnik={}; let skupnaTezaVseh=0, skupnaVrednostVseh=0;
+    shranjeniRacuni.forEach(racun=>{
+      if(izbranDatum==='vsi' || racun.datumKlanja===izbranDatum){
+        racun.postavke.forEach(p=>{
+          if(!zbirnik[p.kos]) zbirnik[p.kos]={teza:0,vrednost:0};
+          zbirnik[p.kos].teza+=p.teza; zbirnik[p.kos].vrednost+=p.skupnaCena;
+          skupnaTezaVseh+=p.teza; skupnaVrednostVseh+=p.skupnaCena;
         });
       }
-
-      document.getElementById('statSkupnaTeza').textContent = `${skupnaTezaVseh.toFixed(2)} kg`;
-      document.getElementById('statSkupnaVrednost').textContent = `${skupnaVrednostVseh.toFixed(2)} €`;
+    });
+    const tbody=document.getElementById('tabelaStatistike'); tbody.innerHTML='';
+    if(Object.keys(zbirnik).length===0){
+      tbody.innerHTML = `<tr><td colspan="4"><div class="empty">Ni podatkov za izbran datum.</div></td></tr>`;
+    } else {
+      Object.keys(zbirnik).sort((a,b)=>zbirnik[b].teza-zbirnik[a].teza).forEach(kos=>{
+        const teza=zbirnik[kos].teza, vrednost=zbirnik[kos].vrednost;
+        const cena = cenik[kos]!==undefined ? cenik[kos] : (teza>0 ? vrednost/teza : 0);
+        const tr=document.createElement('tr'); tr.className="border-b"; tr.style.borderColor='var(--border)';
+        tr.innerHTML = `<td data-label="Kos" class="py-2 px-3 font-medium">${kos}</td>
+          <td data-label="Skupna teža" class="py-2 px-3 text-right font-semibold tabular">${teza.toFixed(2)} kg</td>
+          <td data-label="Cena" class="py-2 px-3 text-right tabular" style="color:var(--ink-soft)">${cena.toFixed(2)} €</td>
+          <td data-label="Vrednost" class="py-2 px-3 text-right font-semibold tabular">${vrednost.toFixed(2)} €</td>`;
+        tbody.appendChild(tr);
+      });
     }
-  </script>
+    document.getElementById('statSkupnaTeza').textContent = `${skupnaTezaVseh.toFixed(2)} kg`;
+    document.getElementById('statSkupnaVrednost').textContent = `${skupnaVrednostVseh.toFixed(2)} €`;
+  }
+</script>
 </body>
 </html>
