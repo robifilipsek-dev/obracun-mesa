@@ -2,22 +2,18 @@
 <html lang="sl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <title>Obračun Mesa</title>
-
-<!-- PWA / Mobile Meta Tags -->
+<meta name="application-name" content="Obračun Mesa">
+<meta name="theme-color" content="#1B3B2F">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Obračun Mesa">
-<meta name="theme-color" content="#1B3B2F">
-
-<!-- Ikone za mobilne naprave in začetni zaslon -->
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='100' fill='%23B91C1C'/><text x='256' y='360' font-size='300' text-anchor='middle'>🥩</text></svg>">
-<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='100' fill='%23B91C1C'/><text x='256' y='360' font-size='300' text-anchor='middle'>🥩</text></svg>">
-
-<!-- Web Application Manifest (vgrajen neposredno) -->
-<link rel="manifest" href='data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22Obra%C4%8Dun%20Mesa%22%2C%22short_name%22%3A%22Obra%C4%8Dun%20Mesa%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23F7F5F3%22%2C%22theme_color%22%3A%22%231B3B2F%22%2C%22orientation%22%3A%22portrait%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20512%20512%22%3E%3Crect%20width%3D%22512%22%20height%3D%22512%22%20rx%3D%22100%22%20fill%3D%22%23B91C1C%22%2F%3E%3Ctext%20x%3D%22256%22%20y%3D%22360%22%20font-size%3D%22300%22%20text-anchor%3D%22middle%22%3E%F0%9F%A5%A9%3C%2Ftext%3E%3C%2Fsvg%3E%22%2C%22sizes%22%3A%22192x192%20512x512%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%2C%22purpose%22%3A%22any%20maskable%22%7D%5D%7D'>
+<meta name="format-detection" content="telephone=no">
+<link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
+<link rel="manifest" href="./manifest.json">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -34,30 +30,28 @@
     --success:#2F6B45; --success-soft:#E3EEE2;
     --info:#3B5A8A; --info-soft:#E4EAF3;
   }
-  *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
-  body{
-    background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;
-    padding-top: max(12px, env(safe-area-inset-top));
-    padding-bottom: max(12px, env(safe-area-inset-bottom));
-    user-select: none;
-  }
-  input, select, textarea { user-select: text; }
+  *{box-sizing:border-box}
+  html{overscroll-behavior-y:none;background:var(--bg)}
+  body{-webkit-tap-highlight-color:transparent;overscroll-behavior-y:none;touch-action:manipulation}
+  button,select,input,textarea{font-family:inherit}
+  body{background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;
+    padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
   .font-brand{font-family:'Bitter',serif}
   .tabular{font-variant-numeric:tabular-nums}
   .card{background:var(--surface);border:1px solid var(--border);border-radius:14px}
   .field-label{font-size:11px;font-weight:600;color:var(--ink-soft);margin-bottom:4px;display:block;letter-spacing:.01em}
-  .field{width:100%;padding:9px 10px;font-size:14px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--ink);transition:border-color .15s}
+  .field{width:100%;padding:9px 10px;font-size:13.5px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--ink);transition:border-color .15s}
   .field:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft)}
-  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border-radius:10px;font-weight:600;transition:background .15s,transform .1s;cursor:pointer;border:1px solid transparent}
-  .btn:active{transform:scale(.96)}
+  .btn{display:inline-flex;align-items:center;gap:6px;border-radius:10px;font-weight:600;transition:background .15s,transform .1s;cursor:pointer;border:1px solid transparent}
+  .btn:active{transform:scale(.97)}
   .btn-primary{background:var(--brand);color:#fff}
   .btn-primary:hover{background:var(--brand-dark)}
   .btn-accent{background:var(--total);color:#fff}
   .btn-accent:hover{background:#8A3324}
   .btn-ghost{background:var(--surface);color:var(--ink);border-color:var(--border)}
   .btn-ghost:hover{background:var(--surface-alt)}
-  .btn-ghost-invert{background:rgba(255,255,255,.12);color:#fff;border-color:rgba(255,255,255,.35)}
-  .btn-ghost-invert:hover{background:rgba(255,255,255,.24)}
+  .btn-ghost-invert{background:rgba(255,255,255,.08);color:#fff;border-color:rgba(255,255,255,.35)}
+  .btn-ghost-invert:hover{background:rgba(255,255,255,.16)}
   .btn-danger-text{color:var(--danger);font-weight:600}
   .btn-link{color:var(--info);font-weight:600}
   .icon{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
@@ -86,24 +80,24 @@
 <!-- HEADER -->
 <div class="max-w-6xl mx-auto mb-4 flex flex-wrap justify-between items-center p-4 rounded-2xl shadow-sm gap-3" style="background:var(--brand)">
   <div class="flex items-center gap-3">
-    <div class="bg-white p-2 rounded-xl font-bold text-2xl flex items-center justify-center shadow-inner" style="color:var(--brand)">🥩</div>
+    <div class="bg-white p-2 rounded-lg font-bold text-xl flex items-center justify-center" style="color:var(--brand)">🥩</div>
     <div>
       <h1 class="text-xl font-brand font-bold leading-tight text-white">Obračun Mesa</h1>
       <p class="text-xs" style="color:var(--accent-soft)">Preračun in evidenca klanja</p>
     </div>
   </div>
-  <div class="flex flex-wrap gap-2 text-sm w-full sm:w-auto">
-    <button id="btnInstallPwa" onclick="namestiAplikacijo()" class="btn btn-ghost-invert px-3 py-2 text-xs flex-1 sm:flex-initial">
+  <div class="flex flex-wrap gap-2 text-sm">
+    <button id="btnInstallPwa" onclick="namestiAplikacijo()" class="btn btn-ghost-invert px-3 py-2 text-xs">
       <svg class="icon" viewBox="0 0 24 24"><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 11l5 5 5-5M12 4v12"/></svg>
       Namesti aplikacijo
     </button>
-    <button onclick="odpriNastavitve()" class="btn btn-ghost-invert px-3 py-2 text-xs flex-1 sm:flex-initial">
+    <button onclick="odpriNastavitve()" class="btn btn-ghost-invert px-3 py-2 text-xs">
       <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.9l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.9-.3 1.7 1.7 0 00-1 1.6V21a2 2 0 11-4 0v-.2a1.7 1.7 0 00-1-1.5 1.7 1.7 0 00-1.9.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.9 1.7 1.7 0 00-1.6-1H3a2 2 0 110-4h.2a1.7 1.7 0 001.5-1 1.7 1.7 0 00-.3-1.9l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.9.3H9a1.7 1.7 0 001-1.6V3a2 2 0 114 0v.2a1.7 1.7 0 001 1.6 1.7 1.7 0 001.9-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.9V9a1.7 1.7 0 001.6 1H21a2 2 0 110 4h-.2a1.7 1.7 0 00-1.6 1z"/></svg>
       Cenik &amp; nastavitve
     </button>
-    <button onclick="odpriStatistiko()" class="btn px-3 py-2 text-xs font-bold flex-1 sm:flex-initial" style="background:var(--accent);color:var(--brand-dark)">
+    <button onclick="odpriStatistiko()" class="btn px-3 py-2 text-xs font-bold" style="background:var(--accent);color:var(--brand-dark)">
       <svg class="icon" viewBox="0 0 24 24"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6" rx=".5"/><rect x="12.5" y="8" width="3" height="10" rx=".5"/><rect x="18" y="5" width="3" height="13" rx=".5"/></svg>
-      Statistika
+      Skupna statistika
     </button>
   </div>
 </div>
@@ -111,11 +105,11 @@
 <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6">
 
   <!-- LEVI STOLPEC -->
-  <div class="lg:col-span-6 card p-5 flex flex-col justify-between shadow-sm">
+  <div class="lg:col-span-6 card p-5 flex flex-col justify-between">
     <div>
       <div class="flex justify-between items-center mb-4 border-b pb-2" style="border-color:var(--border)">
         <h2 id="naslovObrazca" class="text-lg font-brand font-bold">Novi Račun</h2>
-        <span id="urejanjeBadge" class="hidden text-xs px-2.5 py-1 rounded-full font-semibold bg-amber-100 text-amber-800">Način urejanja</span>
+        <span id="urejanjeBadge" class="hidden badge-edit text-xs px-2.5 py-1 rounded-full font-semibold">Način urejanja</span>
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
@@ -186,7 +180,7 @@
   </div>
 
   <!-- DESNI STOLPEC -->
-  <div class="lg:col-span-6 card p-5 shadow-sm">
+  <div class="lg:col-span-6 card p-5">
     <div class="flex flex-wrap justify-between items-center mb-3 border-b pb-2 gap-2" style="border-color:var(--border)">
       <div>
         <h2 class="text-lg font-brand font-bold">Shranjeni računi</h2>
@@ -287,53 +281,56 @@
   let idUrejevanja = null;
   let deferredPrompt = null;
 
-  // --- REGISTRACIJA SERVICE WORKERJA (PWA Off-line podpora) ---
-  if ('serviceWorker' in navigator) {
-    const swScript = `
-      self.addEventListener('install', (e) => self.skipWaiting());
-      self.addEventListener('activate', (e) => e.waitUntil(self.clients.claim()));
-      self.addEventListener('fetch', (e) => {
-        if (e.request.method !== 'GET') return;
-        e.respondWith(
-          fetch(e.request).catch(() => caches.match(e.request))
-        );
-      });
-    `;
-    const encodedSw = 'data:text/javascript;base64,' + btoa(swScript);
-    navigator.serviceWorker.register(encodedSw).catch(() => {});
+  // --- REGISTRACIJA SERVICE WORKERJA (PWA) ---
+  // Service Worker mora biti prava datoteka na istem HTTPS izvoru kot aplikacija.
+  if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js', { scope: './' })
+        .then(() => console.log('PWA: Service Worker je registriran.'))
+        .catch(err => console.warn('PWA: registracija Service Workerja ni uspela:', err));
+    });
   }
 
-  // Obravnava gumba za namestitev PWA
+  // Umetno lovljenje namestitvenega dogodka (PWA)
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
     const btn = document.getElementById('btnInstallPwa');
-    if(btn) btn.style.display = 'inline-flex';
+    if (btn) btn.style.display = 'inline-flex';
   });
 
   window.addEventListener('appinstalled', () => {
     deferredPrompt = null;
     const btn = document.getElementById('btnInstallPwa');
-    if(btn) btn.style.display = 'none';
-    toast('Aplikacija je bila uspešno nameščena na vaš zaslon!');
+    if (btn) btn.style.display = 'none';
+    toast('Aplikacija je bila uspešno nameščena!');
   });
+
+  function jeAplikacijaNameščena() {
+    return window.matchMedia('(display-mode: standalone)').matches ||
+           window.matchMedia('(display-mode: fullscreen)').matches ||
+           window.navigator.standalone === true;
+  }
 
   function namestiAplikacijo() {
     if (deferredPrompt) {
       deferredPrompt.prompt();
       deferredPrompt.userChoice.then((choiceResult) => {
-        if (choiceResult.outcome === 'accepted') {
-          toast('Namestitev poteka...');
-        }
+        if (choiceResult.outcome === 'accepted') toast('Namestitev poteka...');
         deferredPrompt = null;
       });
+      return;
+    }
+
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+    if (isIOS) {
+      alert('Namestitev na iPhone/iPad:\n\n1. Odpri to stran v Safariju.\n2. Pritisni gumb za deljenje.\n3. Izberi "Dodaj na začetni zaslon".\n4. Potrdi z "Dodaj".');
+    } else if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
+      alert('Za pravo namestitev aplikacije mora biti stran objavljena prek HTTPS (npr. GitHub Pages).');
     } else {
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-      if (isIOS) {
-        alert('Za namestitev na iPhone/iPad:\n1. Pritisnite gumb za deljenje (kvadrat s puščico navzgor spodaj)\n2. Izberite "Dodaj na začetni zaslon" (Add to Home Screen)');
-      } else {
-        toast('Če se gumb ne odzove, v meniju brskalnika (3 pike zgoraj) izberite "Dodaj na začetni zaslon".', 'info');
-      }
+      toast('V meniju brskalnika izberi »Namesti aplikacijo« oziroma »Dodaj na začetni zaslon«.','info');
     }
   }
 
@@ -341,14 +338,13 @@
     document.getElementById('datumKlanja').value = new Date().toISOString().split('T')[0];
     napolniIzbiroMesa(); posodobiCenoPrikaz(); osveziFiltreDatumov(); prikaziShranjeneRacune();
     
-    // Če že teče kot samostojna aplikacija (standalone)
-    if (window.matchMedia('(display-mode: standalone)').matches || navigator.standalone) {
+    if (jeAplikacijaNameščena()) {
       const btn = document.getElementById('btnInstallPwa');
       if(btn) btn.style.display = 'none';
     }
   };
 
-  // --- TOAST NOTIFIKACIJE ---
+  // --- TOAST ---
   function toast(sporocilo, tip='success'){
     const wrap = document.getElementById('toastWrap');
     const el = document.createElement('div');
@@ -643,7 +639,7 @@
     const izbranDatum = document.getElementById('filterDatum').value;
     const imeDatoteke = izbranDatum === 'vsi' ? `vsi_racuni_${new Date().toISOString().split('T')[0]}.txt` : `racuni_klanje_${izbranDatum}.txt`;
     prenesiTxtDatoteko(zbirniTxt, imeDatoteke);
-    toast('Zbirni TXT uspešno prenesen!');
+    toast('Zbirni TXT uspešno preneseš!');
   }
 
   function prenesiTxtDatoteko(vsebina, imeDatoteke){
