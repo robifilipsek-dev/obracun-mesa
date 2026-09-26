@@ -9,6 +9,11 @@
 <meta name="apple-mobile-web-app-title" content="Obračun Mesa">
 <meta name="theme-color" content="#1B3B2F">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><text x='32' y='46' font-size='44' text-anchor='middle'>🥩</text></svg>">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%23B91C1C'/><text x='32' y='46' font-size='40' text-anchor='middle'>🥩</text></svg>">
+
+<!-- PWA Manifest neposredno vstavljen -->
+<link rel="manifest" href="data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22Obra%C4%8Dun%20Mesa%22%2C%22short_name%22%3A%22Obra%C4%8Dun%20Mesa%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23F7F5F3%22%2C%22theme_color%22%3A%22%231B3B2F%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2064%2064'%3E%3Crect%20width%3D'64'%20height%3D'64'%20rx%3D'14'%20fill%3D'%23B91C1C'%2F%3E%3Ctext%20x%3D'32'%20y%3D'46'%20font-size%3D'40'%20text-anchor%3D'middle'%3E%F0%9F%A5%A9%3C%2Ftext%3E%3C%2Fsvg%3E%22%2C%22sizes%22%3A%22192x192%20512x512%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%2C%22purpose%22%3A%22any%20maskable%22%7D%5D%7D">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bitter:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -85,7 +90,11 @@
       <p class="text-xs" style="color:var(--accent-soft)">Preračun in evidenca klanja</p>
     </div>
   </div>
-  <div class="flex gap-2 text-sm">
+  <div class="flex flex-wrap gap-2 text-sm">
+    <button id="btnInstallPwa" onclick="namestiAplikacijo()" class="btn btn-ghost-invert px-3 py-2 text-xs">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 11l5 5 5-5M12 4v12"/></svg>
+      Namesti aplikacijo
+    </button>
     <button onclick="odpriNastavitve()" class="btn btn-ghost-invert px-3 py-2 text-xs">
       <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.9l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.9-.3 1.7 1.7 0 00-1 1.6V21a2 2 0 11-4 0v-.2a1.7 1.7 0 00-1-1.5 1.7 1.7 0 00-1.9.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.9 1.7 1.7 0 00-1.6-1H3a2 2 0 110-4h.2a1.7 1.7 0 001.5-1 1.7 1.7 0 00-.3-1.9l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.9.3H9a1.7 1.7 0 001-1.6V3a2 2 0 114 0v.2a1.7 1.7 0 001 1.6 1.7 1.7 0 001.9-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.9V9a1.7 1.7 0 001.6 1H21a2 2 0 110 4h-.2a1.7 1.7 0 00-1.6 1z"/></svg>
       Cenik &amp; nastavitve
@@ -271,10 +280,66 @@
   let trenutnePostavke = [];
   let shranjeniRacuni = JSON.parse(localStorage.getItem('mesnica_racuni')) || [];
   let idUrejevanja = null;
+  let deferredPrompt = null;
+
+  // --- REGISTRACIJA SERVICE WORKERJA (PWA) ---
+  if ('serviceWorker' in navigator) {
+    const swCode = `
+      self.addEventListener('install', (e) => self.skipWaiting());
+      self.addEventListener('activate', (e) => e.waitUntil(self.clients.claim()));
+      self.addEventListener('fetch', (e) => {
+        e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
+      });
+    `;
+    const blob = new Blob([swCode], { type: 'text/javascript' });
+    const swUrl = URL.createObjectURL(blob);
+    navigator.serviceWorker.register(swUrl).catch(err => console.log('SW registracija spodletela:', err));
+  }
+
+  // Umetno lovljenje namestitvenega dogodka (PWA)
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    const btn = document.getElementById('btnInstallPwa');
+    if(btn) btn.style.display = 'inline-flex';
+  });
+
+  window.addEventListener('appinstalled', () => {
+    deferredPrompt = null;
+    const btn = document.getElementById('btnInstallPwa');
+    if(btn) btn.style.display = 'none';
+    toast('Aplikacija je bila uspešno nameščena!');
+  });
+
+  function namestiAplikacijo() {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then((choiceResult) => {
+        if (choiceResult.outcome === 'accepted') {
+          toast('Namestitev poteka...');
+        }
+        deferredPrompt = null;
+      });
+    } else {
+      // Navodila za iOS ali brskalnike brez neposredne podpore za prompt
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+      if (isIOS) {
+        alert('Za namestitev na iPhone/iPad:\n1. Pritisnite gumb za deljenje (kvadrat s puščico navzgor)\n2. Izberite "Dodaj na začetni zaslon" (Add to Home Screen)');
+      } else {
+        toast('Namestitev preko gumba ni na voljo. V meniju brskalnika izberite "Dodaj na začetni zaslon".', 'info');
+      }
+    }
+  }
 
   window.onload = () => {
     document.getElementById('datumKlanja').value = new Date().toISOString().split('T')[0];
     napolniIzbiroMesa(); posodobiCenoPrikaz(); osveziFiltreDatumov(); prikaziShranjeneRacune();
+    
+    // Skrij gumb, če je aplikacija že zagnana kot samostojna (standalone PWA)
+    if (window.matchMedia('(display-mode: standalone)').matches || navigator.standalone) {
+      const btn = document.getElementById('btnInstallPwa');
+      if(btn) btn.style.display = 'none';
+    }
   };
 
   // --- TOAST ---
