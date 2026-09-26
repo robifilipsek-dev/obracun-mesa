@@ -2,289 +2,339 @@
 <html lang="sl" class="dark">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Izračun cene goriva — dizel & bencin 95</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Obračun Mesa — RF Digital</title>
 
-<!-- Standardna SVG ikona za PC brskalnik (zaznamki, zavihki) -->
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23f59e0b'><path d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2zm0 18H6V4h8v16zM8 6h4v4H8V6zm11.29-2.29a1 1 0 0 0-1.42 0L15.17 6.3a1 1 0 0 0 0 1.42l1.42 1.42a1 1 0 0 0 1.42 0l2.71-2.71a1 1 0 0 0 0-1.42zM17 10.41V13a3 3 0 0 1-3 3h-1v2h1a5 5 0 0 0 5-5v-2.59z'/></svg>">
+<!-- Apple iOS podpora za namestitev kot aplikacija (PWA) -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Obračun Mesa">
+
+<!-- Varna SVG ikona mesa (Steak na kosti) -->
+<link id="favicon" rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='100' fill='%2309090b'/><g transform='translate(56, 56) scale(0.78)'><path d='M110 330 C90 300 70 240 100 170 C130 100 220 80 320 100 C410 120 450 190 430 270 C410 350 330 410 240 410 C170 410 130 370 110 330 Z' fill='%23b91c1c'/><path d='M120 320 C105 295 90 245 115 185 C140 125 215 105 305 122 C385 138 420 198 405 268 C390 338 318 390 238 390 C175 390 138 355 120 320 Z' fill='%23ef4444'/><path d='M380 180 C330 190 270 230 220 300 C200 328 175 355 145 370 C165 382 200 390 238 390 C318 390 390 338 405 268 C413 230 402 201 380 180 Z' fill='%23dc2626'/><path d='M220 150 C260 155 290 170 310 195 C290 205 260 200 230 185 C210 175 200 160 220 150 Z' fill='%23fecaca' opacity='0.8'/><path d='M160 230 C200 250 220 280 220 320 C195 305 175 280 165 250 C155 235 152 225 160 230 Z' fill='%23fecaca' opacity='0.8'/><path d='M310 260 C350 280 370 310 360 340 C340 330 325 305 320 280 C315 268 310 260 310 260 Z' fill='%23fecaca' opacity='0.8'/><path d='M180 180 C190 160 220 135 255 130 C250 145 230 165 205 175 C190 181 180 180 180 180 Z' fill='%23ffffff' opacity='0.6'/><circle cx='320' cy='220' r='28' fill='%23f8fafc'/><circle cx='320' cy='220' r='18' fill='%23e2e8f0'/><circle cx='320' cy='220' r='10' fill='%2309090b'/></g></svg>">
+<link id="appleIcon" rel="apple-touch-icon" href="">
+
+<!-- Manifest za Android/Chrome -->
+<link id="manifestLink" rel="manifest">
 
 <script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-tailwind.config={
-  darkMode:'class',
-  theme:{
-    extend:{
-      colors:{
-        brand:{
-          amber:'#f59e0b',
-          amberLight:'#fbbf24',
-          cyan:'#06b6d4',
-          cyanLight:'#38bdf8',
-          green:'#22c55e'
-        }
-      }
-    }
-  }
-}
+tailwind.config={darkMode:'class',theme:{extend:{colors:{brand:{red:'#ef4444',darkRed:'#b91c1c',amber:'#f59e0b',emerald:'#10b981',zinc:'#27272a'}}}}}
 </script>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <style>
-body { font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: -.011em; }
-.mono { font-family: 'JetBrains Mono', monospace; }
-.card { background: rgba(24, 24, 27, 0.94); border: 1px solid #3f3f46; border-radius: 16px; box-shadow: 0 12px 30px rgba(0,0,0,.18); }
-.input { background: #09090b; border: 1px solid #3f3f46; color: #fafafa; border-radius: 10px; padding: .75rem 1rem; font-size: .9rem; width: 100%; outline: none; transition: all 0.2s; }
-
-body.theme-diesel .input:focus { border-color: #f59e0b; box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.12); }
-body.theme-petrol .input:focus { border-color: #06b6d4; box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.12); }
+body{font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:-.011em}.mono{font-family:'JetBrains Mono',monospace}
+.card{background:rgba(24,24,27,.94);border:1px solid #3f3f46;border-radius:16px;box-shadow:0 12px 30px rgba(0,0,0,.18)}
+.input{background:#09090b;border:1px solid #3f3f46;color:#fafafa;border-radius:10px;padding:.75rem 1rem;font-size:.9rem;width:100%;outline:none;transition:all 0.2s}
+.input:focus{border-color:#ef4444;box-shadow:0 0 0 3px rgba(239,68,68,.1)}
 
 input[type=number]::-webkit-inner-spin-button, 
 input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 input[type=number] { -moz-appearance: textfield; }
-.label { display: block; font-size: .75rem; font-weight: 700; color: #d4d4d8; margin-bottom: .4rem; }
-.result { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
-.toast-msg { transition: all 0.3s ease; opacity: 0; transform: translateY(10px); }
-.toast-msg.show { opacity: 1; transform: translateY(0); }
+
+.label{display:block;font-size:.75rem;font-weight:700;color:#d4d4d8;margin-bottom:.4rem}
+.result{font-family:'JetBrains Mono',monospace;font-weight:700}
+
+#toastWrap{position:fixed;left:50%;transform:translateX(-50%);bottom:20px;display:flex;flex-direction:column;gap:8px;z-index:100;pointer-events:none}
+.toast{pointer-events:auto;padding:10px 16px;border-radius:12px;font-size:13px;font-weight:600;box-shadow:0 6px 20px rgba(0,0,0,.3);border:1px solid;animation:toastIn .2s ease-out}
+.toast-success{background:#064e3b;color:#a7f3d0;border-color:#059669}
+.toast-danger{background:#7f1d1d;color:#fecaca;border-color:#dc2626}
+.toast-info{background:#1e3a8a;color:#bfdbfe;border-color:#2563eb}
+@keyframes toastIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 </style>
 </head>
+<body class="bg-zinc-950 text-zinc-100 min-h-screen p-3 md:p-6 flex flex-col items-center">
 
-<body class="theme-diesel bg-zinc-950 text-zinc-100 min-h-screen p-4 md:p-8 flex items-center justify-center">
+<div id="toastWrap"></div>
 
-<div class="max-w-md w-full space-y-4">
-  
-  <!-- Zavihki (Tabs) za preklop goriv -->
-  <div class="grid grid-cols-2 gap-2 p-1.5 bg-zinc-900 border border-zinc-800 rounded-2xl">
-    <button id="tab-diesel" onclick="switchFuelTab('diesel')" class="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-bold transition-all duration-200 bg-amber-500/10 text-amber-400 border border-amber-500/30 shadow-sm">
-      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2zm0 18H6V4h8v16zM8 6h4v4H8V6zm11.29-2.29a1 1 0 0 0-1.42 0L15.17 6.3a1 1 0 0 0 0 1.42l1.42 1.42a1 1 0 0 0 1.42 0l2.71-2.71a1 1 0 0 0 0-1.42zM17 10.41V13a3 3 0 0 1-3 3h-1v2h1a5 5 0 0 0 5-5v-2.59z"/>
-      </svg>
-      <span>Dizelsko gorivo</span>
-    </button>
-    <button id="tab-petrol" onclick="switchFuelTab('petrol')" class="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-bold transition-all duration-200 text-zinc-400 hover:text-zinc-200 border border-transparent">
-      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2zm0 18H6V4h8v16zM8 6h4v4H8V6zm11.29-2.29a1 1 0 0 0-1.42 0L15.17 6.3a1 1 0 0 0 0 1.42l1.42 1.42a1 1 0 0 0 1.42 0l2.71-2.71a1 1 0 0 0 0-1.42zM17 10.41V13a3 3 0 0 1-3 3h-1v2h1a5 5 0 0 0 5-5v-2.59z"/>
-      </svg>
-      <span>Bencin 95</span>
-    </button>
-  </div>
+<div class="max-w-4xl w-full space-y-6">
 
-  <div class="card p-6 space-y-6 relative overflow-hidden">
-    
-    <!-- Glava kartice z gumbom za PWA namestitev -->
-    <div class="flex items-center justify-between border-b border-zinc-800 pb-4">
-      <div>
-        <h1 id="app-title" class="text-xl font-extrabold tracking-tight text-white">Izračun cene dizla</h1>
-        <p class="text-xs text-zinc-400 mt-0.5">Slovenija • Shranjevanje cene na napravi</p>
+  <!-- HEADER -->
+  <div class="card p-5 flex flex-wrap items-center justify-between gap-4">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center p-1">
+        <svg viewBox="0 0 512 512" class="w-full h-full">
+          <!-- Zunanja obroba mesa -->
+          <path d="M110 330 C90 300 70 240 100 170 C130 100 220 80 320 100 C410 120 450 190 430 270 C410 350 330 410 240 410 C170 410 130 370 110 330 Z" fill="#b91c1c"/>
+          <!-- Rdeča sredina mesa -->
+          <path d="M120 320 C105 295 90 245 115 185 C140 125 215 105 305 122 C385 138 420 198 405 268 C390 338 318 390 238 390 C175 390 138 355 120 320 Z" fill="#ef4444"/>
+          <!-- Senčenje spodaj -->
+          <path d="M380 180 C330 190 270 230 220 300 C200 328 175 355 145 370 C165 382 200 390 238 390 C318 390 390 338 405 268 C413 230 402 201 380 180 Z" fill="#dc2626"/>
+          <!-- Marbled maščobne linije -->
+          <path d="M220 150 C260 155 290 170 310 195 C290 205 260 200 230 185 C210 175 200 160 220 150 Z" fill="#fecaca" opacity="0.8"/>
+          <path d="M160 230 C200 250 220 280 220 320 C195 305 175 280 165 250 C155 235 152 225 160 230 Z" fill="#fecaca" opacity="0.8"/>
+          <path d="M310 260 C350 280 370 310 360 340 C340 330 325 305 320 280 C315 268 310 260 310 260 Z" fill="#fecaca" opacity="0.8"/>
+          <path d="M180 180 C190 160 220 135 255 130 C250 145 230 165 205 175 C190 181 180 180 180 180 Z" fill="#ffffff" opacity="0.6"/>
+          <!-- Kost T-bone / runde -->
+          <circle cx="320" cy="220" r="28" fill="#f8fafc"/>
+          <circle cx="320" cy="220" r="18" fill="#e2e8f0"/>
+          <circle cx="320" cy="220" r="10" fill="#09090b"/>
+        </svg>
       </div>
-      <div class="flex items-center gap-2">
-        <button id="installAppBtn" onclick="installPWA()" title="Namesti aplikacijo" class="hidden w-10 h-10 rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-amber-400 items-center justify-center shrink-0 transition-colors">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-        </button>
-        <div id="fuel-icon-bg" class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center shrink-0 transition-colors duration-200">
-          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2zm0 18H6V4h8v16zM8 6h4v4H8V6zm11.29-2.29a1 1 0 0 0-1.42 0L15.17 6.3a1 1 0 0 0 0 1.42l1.42 1.42a1 1 0 0 0 1.42 0l2.71-2.71a1 1 0 0 0 0-1.42zM17 10.41V13a3 3 0 0 1-3 3h-1v2h1a5 5 0 0 0 5-5v-2.59z"/>
-          </svg>
-        </div>
+      <div>
+        <h1 class="text-xl font-extrabold tracking-tight">Obračun Mesa</h1>
+        <p class="text-xs text-zinc-400">Preračun, cenik in evidenca klanja</p>
       </div>
     </div>
 
-    <!-- Vnosna polja -->
-    <div class="space-y-4">
+    <div class="flex items-center gap-2">
+      <button id="installAppBtn" onclick="installPWA()" title="Namesti aplikacijo" class="hidden px-3 py-2 text-xs font-bold rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-red-400 flex items-center gap-2 transition-colors">
+        📥 Namesti
+      </button>
+      <button onclick="odpriNastavitve()" class="px-3 py-2 text-xs font-bold rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 transition-colors">
+        ⚙️ Cenik
+      </button>
+      <button onclick="odpriStatistiko()" class="px-3 py-2 text-xs font-bold rounded-xl bg-red-600/20 border border-red-500/30 text-red-400 hover:bg-red-600/30 transition-colors">
+        📊 Statistika
+      </button>
+    </div>
+  </div>
+
+  <!-- GLAVNI MREŽNI PRIKAZ -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+    <!-- LEVI STOLPEC: Obrazec -->
+    <div class="lg:col-span-6 card p-5 space-y-4">
+      <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
+        <h2 id="naslovObrazca" class="text-base font-bold text-zinc-200">Novi račun</h2>
+        <span id="urejanjeBadge" class="hidden text-[10px] bg-amber-500/20 text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded-full font-bold">Urejanje</span>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="label">Stranka</label>
+          <input type="text" id="priimek" placeholder="Stranka" class="input">
+        </div>
+        <div>
+          <label class="label">Datum klanja</label>
+          <input type="date" id="datumKlanja" class="input">
+        </div>
+      </div>
+
       <div>
-        <div class="flex justify-between items-center mb-1">
-          <label id="price-label" class="label mb-0">Cena dizla [€/l]</label>
-          <span id="price-status" class="text-[10px] text-zinc-400">Preverjam ceno …</span>
+        <label class="label">Opombe (neobvezno)</label>
+        <input type="text" id="opombe" placeholder="npr. brez rebrc, vse mleto..." class="input">
+      </div>
+
+      <!-- VNOS POSTAVKE -->
+      <div class="bg-zinc-900/60 border border-zinc-800 p-3.5 rounded-xl space-y-3">
+        <div class="text-xs font-bold text-zinc-400 uppercase tracking-wider">Dodaj kos mesa</div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="label">Del mesa</label>
+            <select id="kosMesa" class="input" onchange="posodobiCenoPrikaz()"></select>
+          </div>
+          <div>
+            <label class="label">Teža [kg]</label>
+            <input type="number" id="teza" step="0.01" min="0" placeholder="0.00" class="input" onkeypress="allowComma(event)">
+          </div>
         </div>
-        <div class="relative">
-          <input id="fuel-price" class="input pr-16 font-bold text-amber-300 transition-colors duration-200" type="number" step="0.001" oninput="calculate()" onkeypress="allowComma(event)">
-          <div class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-zinc-400 font-bold pointer-events-none">€ / l</div>
-        </div>
-        <div class="flex items-center justify-between mt-1.5">
-          <span id="price-date" class="text-[10px] text-zinc-500"></span>
-          <button id="refresh-btn" onclick="fetchFuelPrices()" class="text-[10px] font-bold text-amber-400 hover:text-amber-300 flex items-center gap-1 transition-colors">
-            <span>↻ Osveži GOV.SI</span>
+        <div class="flex items-center justify-between pt-1">
+          <span class="text-xs text-zinc-400">Cena: <strong id="cenaNaKgPrikaz" class="text-zinc-100 mono">0.00 €/kg</strong></span>
+          <button onclick="dodajPostavko()" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-red-600 hover:bg-red-500 text-white transition-colors">
+            + Dodaj
           </button>
         </div>
       </div>
 
-      <div>
-        <label class="label">Količina točenega goriva [litri]</label>
-        <input id="liters" class="input" type="number" step="0.01" oninput="calculate()" onkeypress="allowComma(event)">
+      <!-- TABELA POSTAVEK -->
+      <div class="overflow-x-auto min-h-[120px]">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-zinc-800 text-zinc-500">
+              <th class="py-2">Kos</th>
+              <th class="py-2 text-right">€/kg</th>
+              <th class="py-2 text-right">kg</th>
+              <th class="py-2 text-right">Skupaj</th>
+              <th class="py-2 text-center"></th>
+            </tr>
+          </thead>
+          <tbody id="tabelaPostavk" class="divide-y divide-zinc-800/50"></tbody>
+        </table>
       </div>
 
-      <div>
-        <label class="label">Popust [centi na liter]</label>
-        <div class="relative">
-          <input id="discount" class="input pr-16" type="number" step="0.1" value="0" oninput="calculate()" onkeypress="allowComma(event)">
-          <div class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-zinc-400 font-bold pointer-events-none">centov</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Prikaz rezultatov -->
-    <div class="border-t border-zinc-800 pt-5 space-y-3">
-      <div class="flex justify-between text-xs text-zinc-400">
-        <span>Osnovna cena brez popusta:</span>
-        <span id="base-total" class="result text-zinc-200">0.00 €</span>
-      </div>
-      <div class="flex justify-between text-xs text-zinc-400">
-        <span>Skupni prihranek:</span>
-        <span id="total-saving" class="result text-emerald-400">-0.00 €</span>
-      </div>
-      <div id="final-box" class="bg-zinc-900 border border-amber-500/30 rounded-xl p-4 flex items-center justify-between transition-all duration-200">
+      <!-- ZNESEK ZA PLAČILO -->
+      <div class="border-t border-zinc-800 pt-4 flex items-center justify-between">
         <div>
-          <div id="final-label" class="text-[11px] font-bold text-amber-300 uppercase tracking-wider transition-colors duration-200">Znesek za plačilo</div>
-          <div class="text-2xl md:text-3xl font-extrabold text-amber-400 result mt-0.5 transition-colors duration-200" id="final-price">0.00 €</div>
+          <div class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Skupaj za plačilo</div>
+          <div id="skupajZaPlacilo" class="text-2xl font-extrabold text-red-500 result">0.00 €</div>
         </div>
-        <button id="copyBtn" onclick="copyResult()" class="px-3 py-2 text-xs font-bold rounded-lg bg-amber-500 hover:bg-amber-400 active:scale-95 text-zinc-950 transition-all duration-200 shadow-md">
-          Kopiraj
-        </button>
+        <div class="flex gap-2">
+          <button id="btnPrekliciUrejanje" onclick="prekliciUrejanje()" class="hidden px-3 py-2 text-xs font-bold rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300">Prekliči</button>
+          <button onclick="shraniRacun()" class="px-4 py-2 text-xs font-bold rounded-xl bg-red-600 hover:bg-red-500 text-white transition-colors">Shrani račun</button>
+        </div>
       </div>
     </div>
 
-    <!-- Grafikon -->
-    <div class="border-t border-zinc-800 pt-5 space-y-3">
-      <div class="flex items-center justify-between">
-        <span id="chart-title" class="text-xs font-bold text-zinc-300 uppercase tracking-wider">Gibanje cene dizla (Zadnja 2 meseca)</span>
-        <span class="text-[10px] text-zinc-500">Zgodovina GOV.SI</span>
+    <!-- DESNI STOLPEC: Shranjeni računi -->
+    <div class="lg:col-span-6 card p-5 space-y-4">
+      <div class="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-800 pb-3">
+        <h2 class="text-base font-bold text-zinc-200">Shranjeni računi</h2>
+        <button onclick="izvoziVseRacuneTxt()" class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700">Izvozi TXT</button>
       </div>
-      <div class="bg-zinc-900/50 border border-zinc-800 rounded-xl p-3">
-        <canvas id="priceChart" width="400" height="200"></canvas>
+
+      <div class="grid grid-cols-2 gap-2">
+        <select id="filterDatum" onchange="prikaziShranjeneRacune()" class="input py-1.5 text-xs"><option value="vsi">Vsi datumi</option></select>
+        <input type="text" id="iskanje" oninput="prikaziShranjeneRacune()" placeholder="Išči stranko..." class="input py-1.5 text-xs">
       </div>
+
+      <div id="seznamRacunov" class="space-y-3 max-h-[480px] overflow-y-auto pr-1"></div>
     </div>
 
   </div>
+</div>
 
-  <div id="toast" class="toast-msg pointer-events-none fixed bottom-4 left-1/2 -translate-x-1/2 bg-zinc-800 border border-zinc-700 text-zinc-200 px-4 py-2 rounded-xl text-xs font-semibold shadow-xl z-50 text-center">
-    Znesek kopiran v odložišče!
+<!-- MODAL: Nastavitve cenika -->
+<div id="modalNastavitve" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+  <div class="card max-w-md w-full p-5 space-y-4">
+    <div class="flex justify-between items-center border-b border-zinc-800 pb-2">
+      <h3 class="text-base font-bold">Urejanje cenika</h3>
+      <button onclick="zapriNastavitve()" class="text-zinc-400 hover:text-white">✕</button>
+    </div>
+    <div class="bg-zinc-900/50 p-3 rounded-xl border border-zinc-800 space-y-2">
+      <div class="text-xs font-bold text-zinc-400">Dodaj nov kos</div>
+      <div class="grid grid-cols-2 gap-2">
+        <input type="text" id="novKosIme" placeholder="Naziv kosa" class="input text-xs py-1.5">
+        <input type="number" id="novKosCena" step="0.1" placeholder="€/kg" class="input text-xs py-1.5" onkeypress="allowComma(event)">
+      </div>
+      <button onclick="dodajNovKosMesa()" class="w-full py-1.5 text-xs font-bold bg-red-600 hover:bg-red-500 rounded-lg text-white">Dodaj na cenik</button>
+    </div>
+    <div id="seznamCenika" class="max-h-48 overflow-y-auto space-y-1.5 pr-1"></div>
+    <div class="border-t border-zinc-800 pt-3 flex justify-between">
+      <button onclick="exportPodatki()" class="text-xs font-bold text-zinc-400 hover:text-zinc-200">📥 Izvoz JSON</button>
+      <button onclick="document.getElementById('uvozInput').click()" class="text-xs font-bold text-zinc-400 hover:text-zinc-200">📤 Uvoz JSON</button>
+      <input type="file" id="uvozInput" accept="application/json" class="hidden" onchange="importPodatki(event)">
+    </div>
+    <div class="pt-2 text-right">
+      <button onclick="zapriNastavitve()" class="px-4 py-1.5 text-xs font-bold rounded-lg bg-zinc-800 hover:bg-zinc-700">Zapri</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Statistika -->
+<div id="modalStatistika" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+  <div class="card max-w-xl w-full p-5 space-y-4">
+    <div class="flex justify-between items-center border-b border-zinc-800 pb-2">
+      <h3 class="text-base font-bold">Skupna statistika klanja</h3>
+      <button onclick="zapriStatistiko()" class="text-zinc-400 hover:text-white">✕</button>
+    </div>
+    <div class="flex items-center gap-3">
+      <label class="text-xs text-zinc-400 font-bold">Datum klanja:</label>
+      <select id="statistikaDatum" onchange="izracunajInPrikaziStatistiko()" class="input text-xs py-1.5 w-auto"><option value="vsi">Vsa klanja</option></select>
+    </div>
+    <div class="max-h-60 overflow-y-auto border border-zinc-800 rounded-xl">
+      <table class="w-full text-left text-xs">
+        <thead class="bg-zinc-900 text-zinc-400 border-b border-zinc-800">
+          <tr><th class="p-2.5">Kos</th><th class="p-2.5 text-right">Teža (kg)</th><th class="p-2.5 text-right">Vrednost (€)</th></tr>
+        </thead>
+        <tbody id="tabelaStatistike" class="divide-y divide-zinc-800/50"></tbody>
+      </table>
+    </div>
+    <div class="flex justify-between items-center border-t border-zinc-800 pt-3">
+      <span class="text-xs text-zinc-400">Skupaj teža: <strong id="statSkupnaTeza" class="text-zinc-100 mono">0 kg</strong></span>
+      <span class="text-xs text-zinc-400">Skupaj vrednost: <strong id="statSkupnaVrednost" class="text-red-400 mono">0.00 €</strong></span>
+    </div>
+    <div class="text-right pt-2">
+      <button onclick="zapriStatistiko()" class="px-4 py-1.5 text-xs font-bold rounded-lg bg-zinc-800 hover:bg-zinc-700">Zapri</button>
+    </div>
   </div>
 </div>
 
 <script>
-let activeTab = 'diesel';
-let priceChartInstance = null;
-let deferredPrompt = null;
-
-let fuelData = {
-  diesel: { price: '', discount: '0', historyLabels: [], historyPrices: [], lastDate: '' },
-  petrol: { price: '', discount: '0', historyLabels: [], historyPrices: [], lastDate: '' }
-};
-
-function generatePumpPngDataUrl(size = 512) {
+function generirajSistemskeIkone() {
   const canvas = document.createElement('canvas');
-  canvas.width = size;
-  canvas.height = size;
+  canvas.width = 512;
+  canvas.height = 512;
   const ctx = canvas.getContext('2d');
 
   ctx.fillStyle = '#09090b';
   ctx.beginPath();
-  ctx.roundRect(0, 0, size, size, size * 0.22);
+  ctx.roundRect(0, 0, 512, 512, 90);
   ctx.fill();
 
-  ctx.strokeStyle = '#27272a';
-  ctx.lineWidth = size * 0.03;
-  ctx.stroke();
-
-  ctx.fillStyle = '#f59e0b';
-  const pathData = new Path2D('M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2zm0 18H6V4h8v16zM8 6h4v4H8V6zm11.29-2.29a1 1 0 0 0-1.42 0L15.17 6.3a1 1 0 0 0 0 1.42l1.42 1.42a1 1 0 0 0 1.42 0l2.71-2.71a1 1 0 0 0 0-1.42zM17 10.41V13a3 3 0 0 1-3 3h-1v2h1a5 5 0 0 0 5-5v-2.59z');
+  const pBase = new Path2D('M110 330 C90 300 70 240 100 170 C130 100 220 80 320 100 C410 120 450 190 430 270 C410 350 330 410 240 410 C170 410 130 370 110 330 Z');
+  const pRed = new Path2D('M120 320 C105 295 90 245 115 185 C140 125 215 105 305 122 C385 138 420 198 405 268 C390 338 318 390 238 390 C175 390 138 355 120 320 Z');
+  const pShade = new Path2D('M380 180 C330 190 270 230 220 300 C200 328 175 355 145 370 C165 382 200 390 238 390 C318 390 390 338 405 268 C413 230 402 201 380 180 Z');
+  
+  const pFat1 = new Path2D('M220 150 C260 155 290 170 310 195 C290 205 260 200 230 185 C210 175 200 160 220 150 Z');
+  const pFat2 = new Path2D('M160 230 C200 250 220 280 220 320 C195 305 175 280 165 250 C155 235 152 225 160 230 Z');
+  const pFat3 = new Path2D('M310 260 C350 280 370 310 360 340 C340 330 325 305 320 280 C315 268 310 260 310 260 Z');
+  const pFat4 = new Path2D('M180 180 C190 160 220 135 255 130 C250 145 230 165 205 175 C190 181 180 180 180 180 Z');
 
   ctx.save();
-  const scale = (size * 0.55) / 24;
-  const offset = (size - 24 * scale) / 2;
-  ctx.translate(offset, offset);
-  ctx.scale(scale, scale);
-  ctx.fill(pathData);
+  ctx.translate(56, 56);
+  ctx.scale(0.78, 0.78);
+
+  ctx.fillStyle = '#b91c1c'; ctx.fill(pBase);
+  ctx.fillStyle = '#ef4444'; ctx.fill(pRed);
+  ctx.fillStyle = '#dc2626'; ctx.fill(pShade);
+  
+  ctx.globalAlpha = 0.8;
+  ctx.fillStyle = '#fecaca'; 
+  ctx.fill(pFat1); ctx.fill(pFat2); ctx.fill(pFat3);
+  
+  ctx.globalAlpha = 0.6;
+  ctx.fillStyle = '#ffffff'; ctx.fill(pFat4);
+  
+  ctx.globalAlpha = 1.0;
+  ctx.fillStyle = '#f8fafc'; ctx.beginPath(); ctx.arc(320, 220, 28, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#e2e8f0'; ctx.beginPath(); ctx.arc(320, 220, 18, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#09090b'; ctx.beginPath(); ctx.arc(320, 220, 10, 0, Math.PI * 2); ctx.fill();
+
   ctx.restore();
 
-  return canvas.toDataURL('image/png');
-}
+  const pngUrl = canvas.toDataURL('image/png');
+  document.getElementById('appleIcon').setAttribute('href', pngUrl);
 
-function injectDynamicManifest() {
-  const pngDataUri = generatePumpPngDataUrl(512);
-
-  let appleIcon = document.querySelector('link[rel="apple-touch-icon"]');
-  if (!appleIcon) {
-    appleIcon = document.createElement('link');
-    appleIcon.rel = 'apple-touch-icon';
-    document.head.appendChild(appleIcon);
-  }
-  appleIcon.href = pngDataUri;
-
-  const manifestData = {
-    name: "Cene Goriva",
-    short_name: "Gorivo",
-    start_url: "./",
-    display: "standalone",
-    background_color: "#09090b",
-    theme_color: "#09090b",
-    icons: [
-      { src: pngDataUri, sizes: "512x512", type: "image/png", purpose: "any" },
-      { src: pngDataUri, sizes: "512x512", type: "image/png", purpose: "maskable" }
+  const manifest = {
+    "name": "Obračun Mesa",
+    "short_name": "Meso",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#09090b",
+    "theme_color": "#09090b",
+    "icons": [
+      { "src": pngUrl, "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
     ]
   };
-
-  const stringManifest = JSON.stringify(manifestData);
-  const blob = new Blob([stringManifest], {type: 'application/json'});
-  const manifestURL = URL.createObjectURL(blob);
-  
-  let manifestLink = document.querySelector('link[rel="manifest"]');
-  if (!manifestLink) {
-    manifestLink = document.createElement('link');
-    manifestLink.rel = 'manifest';
-    document.head.appendChild(manifestLink);
-  }
-  manifestLink.href = manifestURL;
+  const manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
+  document.getElementById('manifestLink').setAttribute('href', URL.createObjectURL(manifestBlob));
 }
+generirajSistemskeIkone();
 
-function checkInstallState() {
-  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-  const installBtn = document.getElementById('installAppBtn');
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-
-  if (isStandalone) {
-    if (installBtn) {
-      installBtn.classList.add('hidden');
-      installBtn.classList.remove('flex');
-    }
-  } else if (deferredPrompt || isIOS) {
-    if (installBtn) {
-      installBtn.classList.remove('hidden');
-      installBtn.classList.add('flex');
-    }
-  }
-}
+let cenik = JSON.parse(localStorage.getItem('mesnica_cenik')) || {
+  "Kare":12, "Stegno":13, "Stegno s kostmi":12, "Pleče":10, "Vrat":10, "Rebra":8, "Flam":8, "Prsa":8, "Kosti":2, "Faširano":10
+};
+let trenutnePostavke = [];
+let shranjeniRacuni = JSON.parse(localStorage.getItem('mesnica_racuni')) || [];
+let idUrejevanja = null;
+let deferredPrompt = null;
 
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
-  checkInstallState();
+  const btn = document.getElementById('installAppBtn');
+  if (btn) btn.classList.remove('hidden');
 });
 
 async function installPWA() {
   if (deferredPrompt) {
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === 'accepted') {
-      checkInstallState();
-    }
+    if (outcome === 'accepted') toast('Aplikacija se namešča...');
     deferredPrompt = null;
-  } else {
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-    if (isIOS) {
-      showToast("Klikni gumb 'Deli' (spodaj v Safariju) in izberi 'Dodaj na domači zaslon'!");
-    } else {
-      showToast("Aplikacijo dodaš preko menija brskalnika: 'Dodaj na domači zaslon'.");
-    }
+    document.getElementById('installAppBtn').classList.add('hidden');
   }
 }
 
 window.addEventListener('appinstalled', () => {
+  document.getElementById('installAppBtn').classList.add('hidden');
   deferredPrompt = null;
-  checkInstallState();
-  showToast("Aplikacija je bila uspešno nameščena!");
+  toast('Aplikacija je nameščena na telefon!');
 });
 
 function allowComma(e) {
@@ -299,387 +349,289 @@ function allowComma(e) {
   }
 }
 
-function switchFuelTab(tab) {
-  saveCurrentTabInputs();
-
-  activeTab = tab;
-  localStorage.setItem('active_fuel_tab', tab);
-
-  const bodyEl = document.body;
-  const tabDieselBtn = document.getElementById('tab-diesel');
-  const tabPetrolBtn = document.getElementById('tab-petrol');
-  const titleEl = document.getElementById('app-title');
-  const priceLabel = document.getElementById('price-label');
-  const chartTitle = document.getElementById('chart-title');
-  const iconBg = document.getElementById('fuel-icon-bg');
-  const copyBtn = document.getElementById('copyBtn');
-  const fuelPriceInput = document.getElementById('fuel-price');
-  const refreshBtn = document.getElementById('refresh-btn');
-  const finalBox = document.getElementById('final-box');
-  const finalLabel = document.getElementById('final-label');
-  const finalPrice = document.getElementById('final-price');
-  const installBtn = document.getElementById('installAppBtn');
-
-  if (tab === 'diesel') {
-    bodyEl.className = "theme-diesel bg-zinc-950 text-zinc-100 min-h-screen p-4 md:p-8 flex items-center justify-center";
-    tabDieselBtn.className = "flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-bold transition-all duration-200 bg-amber-500/10 text-amber-400 border border-amber-500/30 shadow-sm";
-    tabPetrolBtn.className = "flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-bold transition-all duration-200 text-zinc-400 hover:text-zinc-200 border border-transparent";
-    
-    titleEl.textContent = "Izračun cene dizla";
-    priceLabel.textContent = "Cena dizla [€/l]";
-    chartTitle.textContent = "Gibanje cene dizla (Zadnja 2 meseca)";
-    iconBg.className = "w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center shrink-0 transition-colors duration-200";
-    
-    fuelPriceInput.className = "input pr-16 font-bold text-amber-300 transition-colors duration-200";
-    refreshBtn.className = "text-[10px] font-bold text-amber-400 hover:text-amber-300 flex items-center gap-1 transition-colors";
-    
-    finalBox.className = "bg-zinc-900 border border-amber-500/30 rounded-xl p-4 flex items-center justify-between transition-all duration-200";
-    finalLabel.className = "text-[11px] font-bold text-amber-300 uppercase tracking-wider transition-colors duration-200";
-    finalPrice.className = "text-2xl md:text-3xl font-extrabold text-amber-400 result mt-0.5 transition-colors duration-200";
-    
-    copyBtn.className = "px-3 py-2 text-xs font-bold rounded-lg bg-amber-500 hover:bg-amber-400 active:scale-95 text-zinc-950 transition-all duration-200 shadow-md";
-    
-    if (installBtn) {
-      installBtn.classList.remove('text-cyan-400');
-      installBtn.classList.add('text-amber-400');
-    }
-  } else {
-    bodyEl.className = "theme-petrol bg-zinc-950 text-zinc-100 min-h-screen p-4 md:p-8 flex items-center justify-center";
-    tabPetrolBtn.className = "flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-bold transition-all duration-200 bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 shadow-sm";
-    tabDieselBtn.className = "flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-bold transition-all duration-200 text-zinc-400 hover:text-zinc-200 border border-transparent";
-    
-    titleEl.textContent = "Izračun cene bencina 95";
-    priceLabel.textContent = "Cena bencina 95 [€/l]";
-    chartTitle.textContent = "Gibanje cene bencina 95 (Zadnja 2 meseca)";
-    iconBg.className = "w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center shrink-0 transition-colors duration-200";
-    
-    fuelPriceInput.className = "input pr-16 font-bold text-cyan-300 transition-colors duration-200";
-    refreshBtn.className = "text-[10px] font-bold text-cyan-400 hover:text-cyan-300 flex items-center gap-1 transition-colors";
-
-    finalBox.className = "bg-zinc-900 border border-cyan-500/30 rounded-xl p-4 flex items-center justify-between transition-all duration-200";
-    finalLabel.className = "text-[11px] font-bold text-cyan-300 uppercase tracking-wider transition-colors duration-200";
-    finalPrice.className = "text-2xl md:text-3xl font-extrabold text-cyan-400 result mt-0.5 transition-colors duration-200";
-
-    copyBtn.className = "px-3 py-2 text-xs font-bold rounded-lg bg-cyan-500 hover:bg-cyan-400 active:scale-95 text-zinc-950 transition-all duration-200 shadow-md";
-    
-    if (installBtn) {
-      installBtn.classList.remove('text-amber-400');
-      installBtn.classList.add('text-cyan-400');
-    }
-  }
-
-  loadTabInputs();
-  calculate();
-  updateChart();
+function toast(msg, tip='success'){
+  const wrap = document.getElementById('toastWrap');
+  const el = document.createElement('div');
+  el.className = `toast toast-${tip}`;
+  el.textContent = msg;
+  wrap.appendChild(el);
+  setTimeout(()=>{ el.style.opacity='0'; setTimeout(()=>el.remove(),250); }, 3000);
 }
 
-function saveCurrentTabInputs() {
-  const p = document.getElementById('fuel-price').value.replace(',', '.');
-  const d = document.getElementById('discount').value.replace(',', '.');
-  const l = document.getElementById('liters').value.replace(',', '.');
+function shraniCenikVShrambo(){ localStorage.setItem('mesnica_cenik', JSON.stringify(cenik)); }
 
-  fuelData[activeTab].price = p;
-  fuelData[activeTab].discount = d;
-
-  const discountKey = activeTab === 'diesel' ? 'diesel_discount' : 'petrol95_discount';
-
-  if (p !== '') localStorage.setItem(activeTab + '_price', p);
-  localStorage.setItem(discountKey, d);
-  localStorage.setItem('fuel_liters', l);
+function napolniIzbiroMesa(){
+  const select = document.getElementById('kosMesa'); select.innerHTML='';
+  Object.keys(cenik).forEach(kos=>{
+    const o=document.createElement('option'); o.value=kos; o.textContent=kos; select.appendChild(o);
+  });
+  posodobiCenoPrikaz();
 }
 
-function loadTabInputs() {
-  const discountKey = activeTab === 'diesel' ? 'diesel_discount' : 'petrol95_discount';
-  const savedDiscount = localStorage.getItem(discountKey);
+function posodobiCenoPrikaz(){
+  const izbranKos = document.getElementById('kosMesa').value;
+  if(izbranKos && cenik[izbranKos]!==undefined) document.getElementById('cenaNaKgPrikaz').textContent = `${cenik[izbranKos].toFixed(2)} €/kg`;
+}
 
-  if (savedDiscount !== null) {
-    fuelData[activeTab].discount = savedDiscount;
+function dodajPostavko(){
+  const kos = document.getElementById('kosMesa').value;
+  const teza = parseFloat(document.getElementById('teza').value.replace(',', '.'));
+  if(!kos){ toast('Izberite kos mesa.','danger'); return; }
+  if(isNaN(teza)||teza<=0){ toast('Vnesite veljavno težo.','danger'); return; }
+  const cenaNaKg = cenik[kos]; const skupnaCena = teza*cenaNaKg;
+  trenutnePostavke.push({kos,cenaNaKg,teza,skupnaCena});
+  document.getElementById('teza').value=''; osveziTabeloPostavk();
+}
+
+function odstraniPostavko(index){ trenutnePostavke.splice(index,1); osveziTabeloPostavk(); }
+
+function osveziTabeloPostavk(){
+  const tbody = document.getElementById('tabelaPostavk'); tbody.innerHTML='';
+  if(trenutnePostavke.length===0){
+    tbody.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-zinc-500 italic">Ni dodanih postavk.</td></tr>`;
+    document.getElementById('skupajZaPlacilo').textContent='0.00 €'; return;
   }
+  let skupaj=0;
+  trenutnePostavke.forEach((p,index)=>{
+    skupaj += p.skupnaCena;
+    const tr=document.createElement('tr');
+    tr.innerHTML = `
+      <td class="py-2 font-medium text-zinc-200">${p.kos}</td>
+      <td class="py-2 text-right mono text-zinc-400">${p.cenaNaKg.toFixed(2)}</td>
+      <td class="py-2 text-right mono text-zinc-300">${p.teza.toFixed(2)}</td>
+      <td class="py-2 text-right mono font-bold text-red-400">${p.skupnaCena.toFixed(2)} €</td>
+      <td class="py-2 text-center"><button onclick="odstraniPostavko(${index})" class="text-red-400 font-bold hover:text-red-300">✕</button></td>`;
+    tbody.appendChild(tr);
+  });
+  document.getElementById('skupajZaPlacilo').textContent = `${skupaj.toFixed(2)} €`;
+}
 
-  document.getElementById('fuel-price').value = fuelData[activeTab].price || '';
-  document.getElementById('discount').value = fuelData[activeTab].discount !== undefined ? fuelData[activeTab].discount : '0';
+function shraniRacun(){
+  const priimek = document.getElementById('priimek').value.trim();
+  const datumKlanja = document.getElementById('datumKlanja').value;
+  const opombe = document.getElementById('opombe').value.trim();
+  if(!priimek){ toast('Vnesite stranko.','danger'); return; }
+  if(!datumKlanja){ toast('Izberite datum klanja.','danger'); return; }
+  if(trenutnePostavke.length===0){ toast('Dodajte vsaj eno postavko.','danger'); return; }
   
-  const savedLiters = localStorage.getItem('fuel_liters');
-  document.getElementById('liters').value = savedLiters !== null ? savedLiters : '';
-}
-
-function calculate() {
-  let priceInput = document.getElementById('fuel-price').value.replace(',', '.');
-  let discountInput = document.getElementById('discount').value.replace(',', '.');
-  let litersInput = document.getElementById('liters').value.replace(',', '.');
-
-  let pricePerLitre = parseFloat(priceInput) || 0;
-  let liters = parseFloat(litersInput) || 0;
-  let discountCents = parseFloat(discountInput) || 0;
-
-  fuelData[activeTab].price = priceInput;
-  fuelData[activeTab].discount = discountInput;
-
-  const discountKey = activeTab === 'diesel' ? 'diesel_discount' : 'petrol95_discount';
-
-  if (priceInput !== '') localStorage.setItem(activeTab + '_price', priceInput);
-  localStorage.setItem(discountKey, discountInput);
-  localStorage.setItem('fuel_liters', litersInput);
-
-  let discountPerLitre = discountCents / 100;
-  let effectivePricePerLitre = Math.max(0, pricePerLitre - discountPerLitre);
-
-  let baseTotal = pricePerLitre * liters;
-  let finalTotal = effectivePricePerLitre * liters;
-  let totalSaving = baseTotal - finalTotal;
-
-  document.getElementById('base-total').textContent = baseTotal.toFixed(2) + ' €';
-  document.getElementById('total-saving').textContent = '-' + totalSaving.toFixed(2) + ' €';
-  document.getElementById('final-price').textContent = finalTotal.toFixed(2) + ' €';
-}
-
-function updateChart() {
-  const ctx = document.getElementById('priceChart').getContext('2d');
-  const labels = fuelData[activeTab].historyLabels || [];
-  const prices = fuelData[activeTab].historyPrices || [];
-  const isDiesel = activeTab === 'diesel';
-
-  const color = isDiesel ? '#f59e0b' : '#06b6d4';
-  const bgGradient = isDiesel ? 'rgba(245, 158, 11, 0.12)' : 'rgba(6, 182, 212, 0.12)';
-
-  if (priceChartInstance) {
-    priceChartInstance.data.labels = labels;
-    priceChartInstance.data.datasets[0].data = prices;
-    priceChartInstance.data.datasets[0].label = isDiesel ? 'Cena dizla (€/l)' : 'Cena bencina 95 (€/l)';
-    priceChartInstance.data.datasets[0].borderColor = color;
-    priceChartInstance.data.datasets[0].backgroundColor = bgGradient;
-    priceChartInstance.data.datasets[0].pointBackgroundColor = color;
-    priceChartInstance.update();
-    return;
+  const skupnaVrednost = trenutnePostavke.reduce((s,p)=>s+p.skupnaCena,0);
+  if(idUrejevanja){
+    const idx = shranjeniRacuni.findIndex(r=>r.id===idUrejevanja);
+    if(idx!==-1) shranjeniRacuni[idx] = {...shranjeniRacuni[idx], priimek, datumKlanja, opombe, postavke:[...trenutnePostavke], skupaj:skupnaVrednost};
+    prekliciUrejanje(); toast('Račun posodobljen.');
+  } else {
+    shranjeniRacuni.unshift({id:Date.now(), priimek, datumKlanja, opombe, postavke:[...trenutnePostavke], skupaj:skupnaVrednost});
+    toast('Račun shranjen.');
   }
+  localStorage.setItem('mesnica_racuni', JSON.stringify(shranjeniRacuni));
+  document.getElementById('priimek').value=''; document.getElementById('opombe').value='';
+  trenutnePostavke=[]; osveziTabeloPostavk(); osveziFiltreDatumov(); prikaziShranjeneRacune();
+}
 
-  priceChartInstance = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: labels,
-      datasets: [{
-        label: isDiesel ? 'Cena dizla (€/l)' : 'Cena bencina 95 (€/l)',
-        data: prices,
-        borderColor: color,
-        backgroundColor: bgGradient,
-        borderWidth: 2,
-        fill: true,
-        tension: 0,
-        pointBackgroundColor: color,
-        pointRadius: 3
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          callbacks: {
-            label: function(context) { return context.parsed.y.toFixed(3) + ' €/l'; }
-          }
-        }
-      },
-      scales: {
-        x: {
-          grid: { color: 'rgba(255, 255, 255, 0.05)' },
-          ticks: { color: '#a1a1aa', font: { size: 8 }, maxRotation: 45, minRotation: 45 }
-        },
-        y: {
-          grid: { color: 'rgba(255, 255, 255, 0.05)' },
-          ticks: { 
-            color: '#a1a1aa', 
-            font: { size: 10 },
-            callback: function(value) { return value.toFixed(3); }
-          }
-        }
-      }
-    }
+function urediRacun(id){
+  const racun = shranjeniRacuni.find(r=>r.id===id); if(!racun) return;
+  idUrejevanja=id;
+  document.getElementById('priimek').value = racun.priimek;
+  document.getElementById('datumKlanja').value = racun.datumKlanja || new Date().toISOString().split('T')[0];
+  document.getElementById('opombe').value = racun.opombe || '';
+  trenutnePostavke = JSON.parse(JSON.stringify(racun.postavke));
+  osveziTabeloPostavk();
+  document.getElementById('naslovObrazca').textContent = "Uredi račun";
+  document.getElementById('urejanjeBadge').classList.remove('hidden');
+  document.getElementById('btnPrekliciUrejanje').classList.remove('hidden');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function prekliciUrejanje(){
+  idUrejevanja=null;
+  document.getElementById('priimek').value=''; document.getElementById('opombe').value='';
+  trenutnePostavke=[]; osveziTabeloPostavk();
+  document.getElementById('naslovObrazca').textContent = "Novi račun";
+  document.getElementById('urejanjeBadge').classList.add('hidden');
+  document.getElementById('btnPrekliciUrejanje').classList.add('hidden');
+}
+
+function izbrisiRacun(id){
+  if(confirm("Res želiš izbrisati ta račun?")){
+    shranjeniRacuni = shranjeniRacuni.filter(r=>r.id!==id);
+    localStorage.setItem('mesnica_racuni', JSON.stringify(shranjeniRacuni));
+    if(idUrejevanja===id) prekliciUrejanje();
+    osveziFiltreDatumov(); prikaziShranjeneRacune(); toast('Račun izbrisan.','info');
+  }
+}
+
+function osveziFiltreDatumov(){
+  const datumi=[...new Set(shranjeniRacuni.map(r=>r.datumKlanja).filter(Boolean))].sort().reverse();
+  const filterSelect=document.getElementById('filterDatum'), statSelect=document.getElementById('statistikaDatum');
+  filterSelect.innerHTML='<option value="vsi">Vsi datumi</option>';
+  statSelect.innerHTML='<option value="vsi">Vsa klanja</option>';
+  datumi.forEach(d=>{ 
+    const l=urediPrikazDatuma(d); 
+    filterSelect.innerHTML+=`<option value="${d}">${l}</option>`; 
+    statSelect.innerHTML+=`<option value="${d}">${l}</option>`; 
   });
 }
 
-function parseDate(dateStr, year) {
-  const parts = dateStr.replace(/\s/g, '').split('.');
-  return new Date(year, parseInt(parts[1], 10) - 1, parseInt(parts[0], 10));
-}
+function urediPrikazDatuma(dStr){ if(!dStr) return ''; const p=dStr.split('-'); return p.length===3 ? `${p[2]}.${p[1]}.${p[0]}` : dStr; }
 
-async function fetchFuelPrices() {
-  const status = document.getElementById('price-status');
-  const dateEl = document.getElementById('price-date');
-  status.textContent = 'Preverjam podatke z GOV.SI …';
-  status.className = 'text-[10px] text-yellow-400';
-
-  const target = 'https://www.gov.si/teme/cene-naftnih-derivatov/';
-  const urls = [
-    'https://r.jina.ai/' + target,
-    'https://api.allorigins.win/raw?url=' + encodeURIComponent(target),
-    'https://corsproxy.io/?url=' + encodeURIComponent(target)
-  ];
-
-  let historyFetched = false;
-
-  for (const url of urls) {
-    try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 6000);
-      const response = await fetch(url, { signal: controller.signal, cache: 'no-store' });
-      clearTimeout(timeout);
-      
-      if (!response.ok) continue;
-      let text = await response.text();
-      if (!text || text.length < 100) continue;
-
-      let cleanText = text.replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\u00A0/g, ' ');
-
-      let dieselHistory = [];
-      let petrolHistory = [];
-
-      const regex = /od\s+(\d{1,2}\.\s*\d{1,2}\.)\s*do\s+(\d{1,2}\.\s*\d{1,2}\.)[^\d]{0,50}(\d{4})[^\d]{0,100}?([1-4][.,]\d{3})[^\d]{0,100}?([1-4][.,]\d{3})/gi;
-      
-      let match;
-      while ((match = regex.exec(cleanText)) !== null) {
-        const dateStartStr = match[1];
-        const dateEndStr = match[2];
-        const year = parseInt(match[3], 10);
-        const pricePetrol = parseFloat(match[4].replace(',', '.'));
-        const priceDiesel = parseFloat(match[5].replace(',', '.'));
-        
-        const startDate = parseDate(dateStartStr, year);
-        const endDate = parseDate(dateEndStr, year);
-        endDate.setHours(23, 59, 59, 999);
-
-        const label = `${dateStartStr.replace(/\s/g, '')}-${dateEndStr.replace(/\s/g, '')}`;
-        
-        if (priceDiesel > 1.0 && priceDiesel < 3.0 && !dieselHistory.find(h => h.label === label)) {
-          dieselHistory.push({ label, price: priceDiesel, startDate, endDate });
-        }
-        if (pricePetrol > 1.0 && pricePetrol < 3.0 && !petrolHistory.find(h => h.label === label)) {
-          petrolHistory.push({ label, price: pricePetrol, startDate, endDate });
-        }
-      }
-
-      if (dieselHistory.length >= 2 && petrolHistory.length >= 2) {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        dieselHistory.sort((a, b) => a.startDate - b.startDate);
-        let currentDiesel = dieselHistory.find(item => today >= item.startDate && today <= item.endDate) || dieselHistory[dieselHistory.length - 1];
-        let dChart = [...dieselHistory].sort((a, b) => b.startDate - a.startDate).slice(0, 8).reverse();
-
-        fuelData.diesel.price = currentDiesel.price.toFixed(3);
-        fuelData.diesel.historyLabels = dChart.map(i => i.label);
-        fuelData.diesel.historyPrices = dChart.map(i => i.price);
-
-        petrolHistory.sort((a, b) => a.startDate - b.startDate);
-        let currentPetrol = petrolHistory.find(item => today >= item.startDate && today <= item.endDate) || petrolHistory[petrolHistory.length - 1];
-        let pChart = [...petrolHistory].sort((a, b) => b.startDate - a.startDate).slice(0, 8).reverse();
-
-        fuelData.petrol.price = currentPetrol.price.toFixed(3);
-        fuelData.petrol.historyLabels = pChart.map(i => i.label);
-        fuelData.petrol.historyPrices = pChart.map(i => i.price);
-
-        localStorage.setItem('diesel_price', fuelData.diesel.price);
-        localStorage.setItem('diesel_history', JSON.stringify({ labels: fuelData.diesel.historyLabels, prices: fuelData.diesel.historyPrices }));
-        
-        localStorage.setItem('petrol95_price', fuelData.petrol.price);
-        localStorage.setItem('petrol95_history', JSON.stringify({ labels: fuelData.petrol.historyLabels, prices: fuelData.petrol.historyPrices }));
-        
-        localStorage.setItem('fuel_last_update', new Date().toISOString());
-
-        status.textContent = 'Samodejno posodobljeno s strani GOV.SI';
-        status.className = 'text-[10px] text-emerald-400';
-        dateEl.textContent = 'Vir: GOV.SI • Osveženo ' + new Date().toLocaleDateString('sl-SI');
-        
-        loadTabInputs();
-        calculate();
-        updateChart();
-        historyFetched = true;
-        break;
-      }
-    } catch (e) {
-      console.warn("Napaka pri proxy povezavi:", url, e);
-    }
-  }
-
-  if (!historyFetched) {
-    status.textContent = 'Lokalno shranjeni podatki';
-    status.className = 'text-[10px] text-yellow-400';
-    const lastUpdate = localStorage.getItem('fuel_last_update');
-    dateEl.textContent = lastUpdate ? 'Zadnja osvežitev: ' + new Date(lastUpdate).toLocaleDateString('sl-SI') : 'Brez povezave';
-  }
-}
-
-function loadSavedData() {
-  injectDynamicManifest();
-
-  // Najprej preberemo shranjene podatke iz localStorage za oba zavihka
-  const savedDieselPrice = localStorage.getItem('diesel_price');
-  const savedDieselDiscount = localStorage.getItem('diesel_discount');
-  const savedDieselHistory = localStorage.getItem('diesel_history');
-
-  if (savedDieselPrice) fuelData.diesel.price = savedDieselPrice;
-  if (savedDieselDiscount !== null) fuelData.diesel.discount = savedDieselDiscount;
-  if (savedDieselHistory) {
-    const h = JSON.parse(savedDieselHistory);
-    fuelData.diesel.historyLabels = h.labels;
-    fuelData.diesel.historyPrices = h.prices;
-  } else {
-    fuelData.diesel.historyLabels = ['14.7.-20.7.', '21.7.-27.7.', '28.7.-3.8.', '4.8.-10.8.'];
-    fuelData.diesel.historyPrices = [1.520, 1.540, 1.530, 1.515];
-  }
-
-  const savedPetrolPrice = localStorage.getItem('petrol95_price');
-  const savedPetrolDiscount = localStorage.getItem('petrol95_discount');
-  const savedPetrolHistory = localStorage.getItem('petrol95_history');
-
-  if (savedPetrolPrice) fuelData.petrol.price = savedPetrolPrice;
-  if (savedPetrolDiscount !== null) fuelData.petrol.discount = savedPetrolDiscount;
-  if (savedPetrolHistory) {
-    const h = JSON.parse(savedPetrolHistory);
-    fuelData.petrol.historyLabels = h.labels;
-    fuelData.petrol.historyPrices = h.prices;
-  } else {
-    fuelData.petrol.historyLabels = ['14.7.-20.7.', '21.7.-27.7.', '28.7.-3.8.', '4.8.-10.8.'];
-    fuelData.petrol.historyPrices = [1.480, 1.510, 1.490, 1.475];
-  }
-
-  const savedTab = localStorage.getItem('active_fuel_tab');
-  if (savedTab === 'petrol' || savedTab === 'diesel') {
-    activeTab = savedTab;
-  }
-
-  switchFuelTab(activeTab);
-  checkInstallState();
-  fetchFuelPrices();
-}
-
-function copyResult() {
-  const finalPrice = document.getElementById('final-price').textContent;
+function prikaziShranjeneRacune(){
+  const seznam=document.getElementById('seznamRacunov'); seznam.innerHTML='';
+  const iskanje=document.getElementById('iskanje').value.toLowerCase();
+  const izbranDatum=document.getElementById('filterDatum').value;
   
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(finalPrice);
-  } else {
-    const textarea = document.createElement('textarea');
-    textarea.value = finalPrice;
-    document.body.appendChild(textarea);
-    textarea.select();
-    document.execCommand('copy');
-    document.body.removeChild(textarea);
+  const filtrirani = shranjeniRacuni.filter(r=>{
+    const ujemaBesedilo = r.priimek.toLowerCase().includes(iskanje) || (r.opombe||'').toLowerCase().includes(iskanje);
+    const ujemaDatum = izbranDatum==='vsi' || r.datumKlanja===izbranDatum;
+    return ujemaBesedilo && ujemaDatum;
+  });
+
+  if(filtrirani.length===0){
+    seznam.innerHTML = `<div class="p-6 text-center text-xs text-zinc-500 italic">Ni shranjenih računov.</div>`;
+    return;
   }
 
-  showToast('Znesek kopiran v odložišče!');
+  filtrirani.forEach(racun=>{
+    const div=document.createElement('div');
+    div.className="p-3.5 rounded-xl bg-zinc-900/60 border border-zinc-800 text-xs space-y-2";
+    const postavkeHtml = racun.postavke.map(p=>`<li class="flex justify-between text-zinc-400 py-0.5 border-b border-zinc-800/40 last:border-0"><span>${p.kos} (${p.teza} kg)</span><span class="mono text-zinc-200">${p.skupnaCena.toFixed(2)} €</span></li>`).join('');
+    div.innerHTML = `
+      <div class="flex justify-between items-start">
+        <div>
+          <strong class="text-sm font-bold text-zinc-100">${racun.priimek}</strong>
+          <div class="text-[10px] text-zinc-400">Klanje: ${urediPrikazDatuma(racun.datumKlanja)}</div>
+        </div>
+        <div class="text-right">
+          <span class="font-extrabold text-sm text-red-400 mono">${racun.skupaj.toFixed(2)} €</span>
+          <div class="flex gap-2 mt-1 justify-end text-[11px] font-bold">
+            <button onclick="kopirajRacunTxt(${racun.id})" class="text-cyan-400 hover:text-cyan-300">Kopiraj</button>
+            <button onclick="urediRacun(${racun.id})" class="text-amber-400 hover:text-amber-300">Uredi</button>
+            <button onclick="izbrisiRacun(${racun.id})" class="text-red-400 hover:text-red-300">Izbriši</button>
+          </div>
+        </div>
+      </div>
+      <ul class="p-2 rounded-lg bg-zinc-950/50 border border-zinc-800/80">${postavkeHtml}</ul>
+      ${racun.opombe ? `<p class="text-[11px] italic text-zinc-400">📝 ${racun.opombe}</p>` : ''}`;
+    seznam.appendChild(div);
+  });
 }
 
-function showToast(msg) {
-  const toast = document.getElementById('toast');
-  toast.textContent = msg;
-  toast.classList.add('show');
-  setTimeout(() => {
-    toast.classList.remove('show');
-  }, 3500);
+function odpriNastavitve(){ prikaziCenikVNastavitvah(); document.getElementById('modalNastavitve').classList.remove('hidden'); document.getElementById('modalNastavitve').classList.add('flex'); }
+function zapriNastavitve(){ document.getElementById('modalNastavitve').classList.add('hidden'); document.getElementById('modalNastavitve').classList.remove('flex'); napolniIzbiroMesa(); }
+
+function prikaziCenikVNastavitvah(){
+  const container=document.getElementById('seznamCenika'); container.innerHTML='';
+  Object.keys(cenik).forEach(kos=>{
+    const div=document.createElement('div');
+    div.className="flex items-center justify-between p-2 rounded-lg bg-zinc-900 border border-zinc-800 text-xs";
+    div.innerHTML = `<span class="font-medium text-zinc-200">${kos}</span>
+      <div class="flex items-center gap-1">
+        <input type="number" step="0.1" value="${cenik[kos]}" onchange="posodobiCenoMesa('${kos}', this.value)" class="input w-16 py-1 text-right text-xs mono" onkeypress="allowComma(event)">
+        <span class="text-zinc-500">€/kg</span>
+        <button onclick="izbrisiKosMesa('${kos}')" class="text-red-400 font-bold ml-1">✕</button>
+      </div>`;
+    container.appendChild(div);
+  });
+}
+
+function posodobiCenoMesa(kos, novaCena){
+  const val=parseFloat(novaCena.replace(',', '.'));
+  if(!isNaN(val)&&val>=0){ cenik[kos]=val; shraniCenikVShrambo(); toast(`Cena za "${kos}" posodobljena.`,'info'); }
+}
+
+function izbrisiKosMesa(kos){
+  if(confirm(`Odstranim "${kos}" iz cenika?`)){ delete cenik[kos]; shraniCenikVShrambo(); prikaziCenikVNastavitvah(); }
+}
+
+function dodajNovKosMesa(){
+  const ime=document.getElementById('novKosIme').value.trim();
+  const cena=parseFloat(document.getElementById('novKosCena').value.replace(',', '.'));
+  if(!ime || isNaN(cena)){ toast('Vnesite pravilno ime in ceno.','danger'); return; }
+  cenik[ime]=cena; shraniCenikVShrambo();
+  document.getElementById('novKosIme').value=''; document.getElementById('novKosCena').value='';
+  prikaziCenikVNastavitvah(); toast(`Kos "${ime}" dodan.`);
+}
+
+function exportPodatki(){
+  const blob = new Blob([JSON.stringify({cenik, racuni:shranjeniRacuni},null,2)], {type:'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = `obracun-mesa-backup.json`; a.click();
+}
+
+function importPodatki(e){
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (evt)=>{
+    try{
+      const d = JSON.parse(evt.target.result);
+      if(d.cenik && d.racuni){ cenik=d.cenik; shranjeniRacuni=d.racuni; shraniCenikVShrambo(); localStorage.setItem('mesnica_racuni', JSON.stringify(shranjeniRacuni)); location.reload(); }
+    }catch(err){ toast('Datoteka ni veljavna.','danger'); }
+  };
+  reader.readAsText(file);
+}
+
+function oblikujRacunVTxt(r){
+  let txt = `========================================\n`;
+  txt += `RAČUN - OBRAČUN MESA\n`;
+  txt += `Stranka: ${r.priimek}\n`;
+  txt += `Datum: ${urediPrikazDatuma(r.datumKlanja)}\n`;
+  if(r.opombe) txt += `Opombe: ${r.opombe}\n`;
+  txt += `----------------------------------------\n`;
+  txt += `POSTAVKE:\n`;
+  r.postavke.forEach(p => { 
+    txt += `- ${p.kos.padEnd(16)}: ${p.teza.toFixed(2).padStart(6)} kg x ${p.cenaNaKg.toFixed(2).padStart(5)} EUR/kg = ${p.skupnaCena.toFixed(2).padStart(7)} EUR\n`; 
+  });
+  txt += `----------------------------------------\n`;
+  txt += `SKUPAJ ZA PLAČILO: ${r.skupaj.toFixed(2)} EUR\n`;
+  txt += `========================================\n`;
+  return txt;
+}
+
+function kopirajRacunTxt(id){
+  const r = shranjeniRacuni.find(x=>x.id===id); if(!r) return;
+  navigator.clipboard.writeText(oblikujRacunVTxt(r)); toast('Kopirano v odložišče!');
+}
+
+function izvoziVseRacuneTxt(){
+  if(shranjeniRacuni.length===0){ toast('Ni računov za izvoz.','danger'); return; }
+  let txt = `OBRAČUN MESA - IZVOZ RAČUNOV\n\n`;
+  shranjeniRacuni.forEach(r => { txt += oblikujRacunVTxt(r) + `\n\n`; });
+  
+  const blob = new Blob(['\uFEFF' + txt], {type: 'text/plain;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `vsi_racuni_mesa.txt`;
+  a.click();
+}
+
+function odpriStatistiko(){ osveziFiltreDatumov(); izracunajInPrikaziStatistiko(); document.getElementById('modalStatistika').classList.remove('hidden'); document.getElementById('modalStatistika').classList.add('flex'); }
+function zapriStatistiko(){ document.getElementById('modalStatistika').classList.add('hidden'); document.getElementById('modalStatistika').classList.remove('flex'); }
+
+function izracunajInPrikaziStatistiko(){
+  const d = document.getElementById('statistikaDatum').value;
+  const zbirnik={}; let skupnaT=0, skupnaV=0;
+  shranjeniRacuni.forEach(r=>{
+    if(d==='vsi' || r.datumKlanja===d){
+      r.postavke.forEach(p=>{
+        if(!zbirnik[p.kos]) zbirnik[p.kos]={teza:0,vrednost:0};
+        zbirnik[p.kos].teza+=p.teza; zbirnik[p.kos].vrednost+=p.skupnaCena;
+        skupnaT+=p.teza; skupnaV+=p.skupnaCena;
+      });
+    }
+  });
+  const tbody=document.getElementById('tabelaStatistike'); tbody.innerHTML='';
+  Object.keys(zbirnik).sort((a,b)=>zbirnik[b].teza-zbirnik[a].teza).forEach(k=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML = `<td class="p-2.5 font-medium text-zinc-200">${k}</td><td class="p-2.5 text-right mono text-zinc-300">${zbirnik[k].teza.toFixed(2)} kg</td><td class="p-2.5 text-right mono text-red-400 font-bold">${zbirnik[k].vrednost.toFixed(2)} €</td>`;
+    tbody.appendChild(tr);
+  });
+  document.getElementById('statSkupnaTeza').textContent = `${skupnaT.toFixed(2)} kg`;
+  document.getElementById('statistikaDatum').value = d;
+  document.getElementById('statSkupnaVrednost').textContent = `${skupnaV.toFixed(2)} €`;
 }
 
 window.onload = () => {
-  loadSavedData();
+  document.getElementById('datumKlanja').value = new Date().toISOString().split('T')[0];
+  napolniIzbiroMesa(); osveziFiltreDatumov(); prikaziShranjeneRacune();
 };
 </script>
 </body>
