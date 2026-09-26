@@ -10,11 +10,11 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Obračun Mesa">
 
-<!-- Varna SVG ikona mesa (s fiksnim odmiko / paddingom za Android, PC in iOS) -->
-<link id="favicon" rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='100' fill='%2309090b'/><g transform='translate(51, 51) scale(0.8)'><path fill='%23ef4444' d='M412 120c-35-35-95-32-132 5L145 260c-25 25-27 65-4 93 18 22 51 31 79 20l126-50c22-9 40-27 49-49l50-126c11-28 2-61-33-28z'/><path fill='%23fecaca' d='M350 160c-15-15-40-15-55 0L170 285c-15 15-15 40 0 55s40 15 55 0l125-125c15-15 15-40 0-55z'/><path fill='%23ffffff' d='M330 180c-5-5-13-5-18 0L200 292c-5 5-5 13 0 18s13 5 18 0l112-112c5-5 5-13 0-18z'/></g></svg>">
+<!-- Varna SVG ikona mesa (Steak na kosti) -->
+<link id="favicon" rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='100' fill='%2309090b'/><g transform='translate(56, 56) scale(0.78)'><path d='M110 330 C90 300 70 240 100 170 C130 100 220 80 320 100 C410 120 450 190 430 270 C410 350 330 410 240 410 C170 410 130 370 110 330 Z' fill='%23b91c1c'/><path d='M120 320 C105 295 90 245 115 185 C140 125 215 105 305 122 C385 138 420 198 405 268 C390 338 318 390 238 390 C175 390 138 355 120 320 Z' fill='%23ef4444'/><path d='M380 180 C330 190 270 230 220 300 C200 328 175 355 145 370 C165 382 200 390 238 390 C318 390 390 338 405 268 C413 230 402 201 380 180 Z' fill='%23dc2626'/><path d='M220 150 C260 155 290 170 310 195 C290 205 260 200 230 185 C210 175 200 160 220 150 Z' fill='%23fecaca' opacity='0.8'/><path d='M160 230 C200 250 220 280 220 320 C195 305 175 280 165 250 C155 235 152 225 160 230 Z' fill='%23fecaca' opacity='0.8'/><path d='M310 260 C350 280 370 310 360 340 C340 330 325 305 320 280 C315 268 310 260 310 260 Z' fill='%23fecaca' opacity='0.8'/><path d='M180 180 C190 160 220 135 255 130 C250 145 230 165 205 175 C190 181 180 180 180 180 Z' fill='%23ffffff' opacity='0.6'/><circle cx='320' cy='220' r='28' fill='%23f8fafc'/><circle cx='320' cy='220' r='18' fill='%23e2e8f0'/><circle cx='320' cy='220' r='10' fill='%2309090b'/></g></svg>">
 <link id="appleIcon" rel="apple-touch-icon" href="">
 
-<!-- Manifest za Android/Chrome z vgrajeno vektorsko ikono z varnim območjem -->
+<!-- Manifest za Android/Chrome -->
 <link id="manifestLink" rel="manifest">
 
 <script src="https://cdn.tailwindcss.com"></script>
@@ -56,11 +56,23 @@ input[type=number] { -moz-appearance: textfield; }
   <!-- HEADER -->
   <div class="card p-5 flex flex-wrap items-center justify-between gap-4">
     <div class="flex items-center gap-3">
-      <div class="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center p-1.5">
+      <div class="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center p-1">
         <svg viewBox="0 0 512 512" class="w-full h-full">
-          <path fill="#ef4444" d="M412 120c-35-35-95-32-132 5L145 260c-25 25-27 65-4 93 18 22 51 31 79 20l126-50c22-9 40-27 49-49l50-126c11-28 2-61-33-28z"/>
-          <path fill="#fecaca" d="M350 160c-15-15-40-15-55 0L170 285c-15 15-15 40 0 55s40 15 55 0l125-125c15-15 15-40 0-55z"/>
-          <path fill="#ffffff" d="M330 180c-5-5-13-5-18 0L200 292c-5 5-5 13 0 18s13 5 18 0l112-112c5-5 5-13 0-18z"/>
+          <!-- Zunanja obroba mesa -->
+          <path d="M110 330 C90 300 70 240 100 170 C130 100 220 80 320 100 C410 120 450 190 430 270 C410 350 330 410 240 410 C170 410 130 370 110 330 Z" fill="#b91c1c"/>
+          <!-- Rdeča sredina mesa -->
+          <path d="M120 320 C105 295 90 245 115 185 C140 125 215 105 305 122 C385 138 420 198 405 268 C390 338 318 390 238 390 C175 390 138 355 120 320 Z" fill="#ef4444"/>
+          <!-- Senčenje spodaj -->
+          <path d="M380 180 C330 190 270 230 220 300 C200 328 175 355 145 370 C165 382 200 390 238 390 C318 390 390 338 405 268 C413 230 402 201 380 180 Z" fill="#dc2626"/>
+          <!-- Marbled maščobne linije -->
+          <path d="M220 150 C260 155 290 170 310 195 C290 205 260 200 230 185 C210 175 200 160 220 150 Z" fill="#fecaca" opacity="0.8"/>
+          <path d="M160 230 C200 250 220 280 220 320 C195 305 175 280 165 250 C155 235 152 225 160 230 Z" fill="#fecaca" opacity="0.8"/>
+          <path d="M310 260 C350 280 370 310 360 340 C340 330 325 305 320 280 C315 268 310 260 310 260 Z" fill="#fecaca" opacity="0.8"/>
+          <path d="M180 180 C190 160 220 135 255 130 C250 145 230 165 205 175 C190 181 180 180 180 180 Z" fill="#ffffff" opacity="0.6"/>
+          <!-- Kost T-bone / runde -->
+          <circle cx="320" cy="220" r="28" fill="#f8fafc"/>
+          <circle cx="320" cy="220" r="18" fill="#e2e8f0"/>
+          <circle cx="320" cy="220" r="10" fill="#09090b"/>
         </svg>
       </div>
       <div>
@@ -233,37 +245,51 @@ input[type=number] { -moz-appearance: textfield; }
 </div>
 
 <script>
-// Generacija PNG ikone za iOS/Apple Touch ter dinamični manifest za Android Chrome
 function generirajSistemskeIkone() {
   const canvas = document.createElement('canvas');
   canvas.width = 512;
   canvas.height = 512;
   const ctx = canvas.getContext('2d');
 
-  // Ozadje ikone
   ctx.fillStyle = '#09090b';
   ctx.beginPath();
   ctx.roundRect(0, 0, 512, 512, 90);
   ctx.fill();
 
-  // Izris vektorskega mesa na Canvas z odmikom (Safe Zone)
-  const p1 = new Path2D('M412 120c-35-35-95-32-132 5L145 260c-25 25-27 65-4 93 18 22 51 31 79 20l126-50c22-9 40-27 49-49l50-126c11-28 2-61-33-28z');
-  const p2 = new Path2D('M350 160c-15-15-40-15-55 0L170 285c-15 15-15 40 0 55s40 15 55 0l125-125c15-15 15-40 0-55z');
-  const p3 = new Path2D('M330 180c-5-5-13-5-18 0L200 292c-5 5-5 13 0 18s13 5 18 0l112-112c5-5 5-13 0-18z');
+  const pBase = new Path2D('M110 330 C90 300 70 240 100 170 C130 100 220 80 320 100 C410 120 450 190 430 270 C410 350 330 410 240 410 C170 410 130 370 110 330 Z');
+  const pRed = new Path2D('M120 320 C105 295 90 245 115 185 C140 125 215 105 305 122 C385 138 420 198 405 268 C390 338 318 390 238 390 C175 390 138 355 120 320 Z');
+  const pShade = new Path2D('M380 180 C330 190 270 230 220 300 C200 328 175 355 145 370 C165 382 200 390 238 390 C318 390 390 338 405 268 C413 230 402 201 380 180 Z');
+  
+  const pFat1 = new Path2D('M220 150 C260 155 290 170 310 195 C290 205 260 200 230 185 C210 175 200 160 220 150 Z');
+  const pFat2 = new Path2D('M160 230 C200 250 220 280 220 320 C195 305 175 280 165 250 C155 235 152 225 160 230 Z');
+  const pFat3 = new Path2D('M310 260 C350 280 370 310 360 340 C340 330 325 305 320 280 C315 268 310 260 310 260 Z');
+  const pFat4 = new Path2D('M180 180 C190 160 220 135 255 130 C250 145 230 165 205 175 C190 181 180 180 180 180 Z');
 
   ctx.save();
-  ctx.translate(51, 51);
-  ctx.scale(0.8, 0.8);
+  ctx.translate(56, 56);
+  ctx.scale(0.78, 0.78);
 
-  ctx.fillStyle = '#ef4444'; ctx.fill(p1);
-  ctx.fillStyle = '#fecaca'; ctx.fill(p2);
-  ctx.fillStyle = '#ffffff'; ctx.fill(p3);
+  ctx.fillStyle = '#b91c1c'; ctx.fill(pBase);
+  ctx.fillStyle = '#ef4444'; ctx.fill(pRed);
+  ctx.fillStyle = '#dc2626'; ctx.fill(pShade);
+  
+  ctx.globalAlpha = 0.8;
+  ctx.fillStyle = '#fecaca'; 
+  ctx.fill(pFat1); ctx.fill(pFat2); ctx.fill(pFat3);
+  
+  ctx.globalAlpha = 0.6;
+  ctx.fillStyle = '#ffffff'; ctx.fill(pFat4);
+  
+  ctx.globalAlpha = 1.0;
+  ctx.fillStyle = '#f8fafc'; ctx.beginPath(); ctx.arc(320, 220, 28, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#e2e8f0'; ctx.beginPath(); ctx.arc(320, 220, 18, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#09090b'; ctx.beginPath(); ctx.arc(320, 220, 10, 0, Math.PI * 2); ctx.fill();
+
   ctx.restore();
 
   const pngUrl = canvas.toDataURL('image/png');
   document.getElementById('appleIcon').setAttribute('href', pngUrl);
 
-  // Dinamični Manifest za Android
   const manifest = {
     "name": "Obračun Mesa",
     "short_name": "Meso",
@@ -288,7 +314,6 @@ let shranjeniRacuni = JSON.parse(localStorage.getItem('mesnica_racuni')) || [];
 let idUrejevanja = null;
 let deferredPrompt = null;
 
-// PWA Namestitev
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
@@ -545,11 +570,19 @@ function importPodatki(e){
 }
 
 function oblikujRacunVTxt(r){
-  let txt = `========================================\nRAČUN - OBRAČUN MESA\nStranka: ${r.priimek}\nDatum: ${urediPrikazDatuma(r.datumKlanja)}\n`;
+  let txt = `========================================\n`;
+  txt += `RAČUN - OBRAČUN MESA\n`;
+  txt += `Stranka: ${r.priimek}\n`;
+  txt += `Datum: ${urediPrikazDatuma(r.datumKlanja)}\n`;
   if(r.opombe) txt += `Opombe: ${r.opombe}\n`;
-  txt += `----------------------------------------\nPOSTAVKE:\n`;
-  r.postavke.forEach(p => { txt += `- ${p.kos.padEnd(14)}: ${p.teza.toFixed(2)} kg x ${p.cenaNaKg.toFixed(2)} €/kg = ${p.skupnaCena.toFixed(2)} €\n`; });
-  txt += `----------------------------------------\nSKUPAJ ZA PLAČILO: ${r.skupaj.toFixed(2)} €\n========================================\n`;
+  txt += `----------------------------------------\n`;
+  txt += `POSTAVKE:\n`;
+  r.postavke.forEach(p => { 
+    txt += `- ${p.kos.padEnd(16)}: ${p.teza.toFixed(2).padStart(6)} kg x ${p.cenaNaKg.toFixed(2).padStart(5)} EUR/kg = ${p.skupnaCena.toFixed(2).padStart(7)} EUR\n`; 
+  });
+  txt += `----------------------------------------\n`;
+  txt += `SKUPAJ ZA PLAČILO: ${r.skupaj.toFixed(2)} EUR\n`;
+  txt += `========================================\n`;
   return txt;
 }
 
@@ -562,8 +595,12 @@ function izvoziVseRacuneTxt(){
   if(shranjeniRacuni.length===0){ toast('Ni računov za izvoz.','danger'); return; }
   let txt = `OBRAČUN MESA - IZVOZ RAČUNOV\n\n`;
   shranjeniRacuni.forEach(r => { txt += oblikujRacunVTxt(r) + `\n\n`; });
-  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([txt], {type:'text/plain'}));
-  a.download = `vsi_racuni_mesa.txt`; a.click();
+  
+  const blob = new Blob(['\uFEFF' + txt], {type: 'text/plain;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `vsi_racuni_mesa.txt`;
+  a.click();
 }
 
 function odpriStatistiko(){ osveziFiltreDatumov(); izracunajInPrikaziStatistiko(); document.getElementById('modalStatistika').classList.remove('hidden'); document.getElementById('modalStatistika').classList.add('flex'); }
