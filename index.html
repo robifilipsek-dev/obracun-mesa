@@ -10,12 +10,12 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Obračun Mesa">
 
-<!-- Dinamično generirana ikona mesa (🥩) za favicon in Apple Touch Icon -->
-<link id="favicon" rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🥩</text></svg>">
+<!-- Varna SVG ikona mesa (s fiksnim odmiko / paddingom za Android, PC in iOS) -->
+<link id="favicon" rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='100' fill='%2309090b'/><g transform='translate(51, 51) scale(0.8)'><path fill='%23ef4444' d='M412 120c-35-35-95-32-132 5L145 260c-25 25-27 65-4 93 18 22 51 31 79 20l126-50c22-9 40-27 49-49l50-126c11-28 2-61-33-28z'/><path fill='%23fecaca' d='M350 160c-15-15-40-15-55 0L170 285c-15 15-15 40 0 55s40 15 55 0l125-125c15-15 15-40 0-55z'/><path fill='%23ffffff' d='M330 180c-5-5-13-5-18 0L200 292c-5 5-5 13 0 18s13 5 18 0l112-112c5-5 5-13 0-18z'/></g></svg>">
 <link id="appleIcon" rel="apple-touch-icon" href="">
 
-<!-- Manifest za Android/Chrome -->
-<link rel="manifest" href="data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22Obracun%20Mesa%22%2C%22short_name%22%3A%22Meso%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%2309090b%22%2C%22theme_color%22%3A%22%2309090b%22%7D">
+<!-- Manifest za Android/Chrome z vgrajeno vektorsko ikono z varnim območjem -->
+<link id="manifestLink" rel="manifest">
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
@@ -56,7 +56,13 @@ input[type=number] { -moz-appearance: textfield; }
   <!-- HEADER -->
   <div class="card p-5 flex flex-wrap items-center justify-between gap-4">
     <div class="flex items-center gap-3">
-      <div class="text-3xl">🥩</div>
+      <div class="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center p-1.5">
+        <svg viewBox="0 0 512 512" class="w-full h-full">
+          <path fill="#ef4444" d="M412 120c-35-35-95-32-132 5L145 260c-25 25-27 65-4 93 18 22 51 31 79 20l126-50c22-9 40-27 49-49l50-126c11-28 2-61-33-28z"/>
+          <path fill="#fecaca" d="M350 160c-15-15-40-15-55 0L170 285c-15 15-15 40 0 55s40 15 55 0l125-125c15-15 15-40 0-55z"/>
+          <path fill="#ffffff" d="M330 180c-5-5-13-5-18 0L200 292c-5 5-5 13 0 18s13 5 18 0l112-112c5-5 5-13 0-18z"/>
+        </svg>
+      </div>
       <div>
         <h1 class="text-xl font-extrabold tracking-tight">Obračun Mesa</h1>
         <p class="text-xs text-zinc-400">Preračun, cenik in evidenca klanja</p>
@@ -227,29 +233,52 @@ input[type=number] { -moz-appearance: textfield; }
 </div>
 
 <script>
-// Natančno centrirana generacija PNG ikone z zaščitnim robom
-function ustvariIkonoMesa() {
+// Generacija PNG ikone za iOS/Apple Touch ter dinamični manifest za Android Chrome
+function generirajSistemskeIkone() {
   const canvas = document.createElement('canvas');
-  canvas.width = 180;
-  canvas.height = 180;
+  canvas.width = 512;
+  canvas.height = 512;
   const ctx = canvas.getContext('2d');
-  
-  // Temno ozadje
+
+  // Ozadje ikone
   ctx.fillStyle = '#09090b';
-  ctx.fillRect(0, 0, 180, 180);
-  
-  // Zmanjšana pisava (90px namesto 110px), da se dodajo varni robovi
-  ctx.font = '90px "Apple Color Emoji", "Segoe UI Emoji", sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  
-  // Izris točno v središče (90, 90) z rahlim popravkom za visoke font-baseline zamike
-  ctx.fillText('🥩', 90, 96);
-  
-  const dataUrl = canvas.toDataURL('image/png');
-  document.getElementById('appleIcon').setAttribute('href', dataUrl);
+  ctx.beginPath();
+  ctx.roundRect(0, 0, 512, 512, 90);
+  ctx.fill();
+
+  // Izris vektorskega mesa na Canvas z odmikom (Safe Zone)
+  const p1 = new Path2D('M412 120c-35-35-95-32-132 5L145 260c-25 25-27 65-4 93 18 22 51 31 79 20l126-50c22-9 40-27 49-49l50-126c11-28 2-61-33-28z');
+  const p2 = new Path2D('M350 160c-15-15-40-15-55 0L170 285c-15 15-15 40 0 55s40 15 55 0l125-125c15-15 15-40 0-55z');
+  const p3 = new Path2D('M330 180c-5-5-13-5-18 0L200 292c-5 5-5 13 0 18s13 5 18 0l112-112c5-5 5-13 0-18z');
+
+  ctx.save();
+  ctx.translate(51, 51);
+  ctx.scale(0.8, 0.8);
+
+  ctx.fillStyle = '#ef4444'; ctx.fill(p1);
+  ctx.fillStyle = '#fecaca'; ctx.fill(p2);
+  ctx.fillStyle = '#ffffff'; ctx.fill(p3);
+  ctx.restore();
+
+  const pngUrl = canvas.toDataURL('image/png');
+  document.getElementById('appleIcon').setAttribute('href', pngUrl);
+
+  // Dinamični Manifest za Android
+  const manifest = {
+    "name": "Obračun Mesa",
+    "short_name": "Meso",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#09090b",
+    "theme_color": "#09090b",
+    "icons": [
+      { "src": pngUrl, "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+    ]
+  };
+  const manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
+  document.getElementById('manifestLink').setAttribute('href', URL.createObjectURL(manifestBlob));
 }
-ustvariIkonoMesa();
+generirajSistemskeIkone();
 
 let cenik = JSON.parse(localStorage.getItem('mesnica_cenik')) || {
   "Kare":12, "Stegno":13, "Stegno s kostmi":12, "Pleče":10, "Vrat":10, "Rebra":8, "Flam":8, "Prsa":8, "Kosti":2, "Faširano":10
