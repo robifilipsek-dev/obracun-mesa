@@ -51,8 +51,6 @@
   .btn-danger-text{color:var(--danger);font-weight:600}
   .btn-link{color:var(--info);font-weight:600}
   .icon{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
-  .stamp{width:44px;height:44px;border-radius:9999px;background:var(--brand-dark);display:flex;align-items:center;justify-content:center;color:var(--accent-soft);border:2px solid var(--accent);flex-shrink:0}
-  .badge-edit{background:#FEF3C7;color:#92400E;border:1px solid #FDE68A}
   .empty{border:1.5px dashed var(--border);border-radius:12px;padding:26px 14px;text-align:center;color:var(--ink-soft)}
   .empty .icon{width:26px;height:26px;margin:0 auto 8px;color:var(--ink-soft);opacity:.6}
   #toastWrap{position:fixed;left:0;right:0;bottom:calc(16px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;align-items:center;gap:8px;z-index:100;pointer-events:none;padding:0 12px}
@@ -69,12 +67,6 @@
     .rtable tbody tr td::before{content:attr(data-label);font-size:11px;font-weight:600;color:var(--ink-soft)}
     .rtable tbody tr td.no-label::before{content:''}
   }
-  @media print{
-    body *{visibility:hidden}
-    #printArea,#printArea *{visibility:visible}
-    #printArea{position:absolute;top:0;left:0;width:100%;padding:20px}
-  }
-  #printArea{display:none}
 </style>
 </head>
 <body class="min-h-screen p-3 md:p-6">
@@ -186,8 +178,14 @@
   <!-- DESNI STOLPEC -->
   <div class="lg:col-span-6 card p-5">
     <div class="flex flex-wrap justify-between items-center mb-3 border-b pb-2 gap-2" style="border-color:var(--border)">
-      <h2 class="text-lg font-brand font-bold">Shranjeni računi</h2>
-      <div class="flex gap-2 w-full sm:w-auto">
+      <div>
+        <h2 class="text-lg font-brand font-bold">Shranjeni računi</h2>
+      </div>
+      <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+        <button onclick="izvoziVseRacuneTxt()" class="btn btn-ghost px-2.5 py-1.5 text-xs" title="Izvozi vse prikazane račune v eno TXT datoteko">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M12 18v-6M9 15l3 3 3-3"/></svg>
+          Izvozi TXT
+        </button>
         <select id="filterDatum" onchange="prikaziShranjeneRacune()" class="field text-xs py-1.5"><option value="vsi">Vsi datumi</option></select>
         <input type="text" id="iskanje" oninput="prikaziShranjeneRacune()" placeholder="Išči po priimku..." class="field text-xs py-1.5 w-full sm:w-32">
       </div>
@@ -270,9 +268,6 @@
   </div>
 </div>
 
-<!-- Skriti tiskalni predogled -->
-<div id="printArea"></div>
-
 <script>
   let cenik = JSON.parse(localStorage.getItem('mesnica_cenik')) || {
     "Kare":12,"Stegno":13,"Stegno s kostmi":12,"Pleče":10,"Vrat":10,"Rebra":8,"Flam":8,"Prsa":8,"Kosti":2,"Faširano":10
@@ -321,7 +316,6 @@
         deferredPrompt = null;
       });
     } else {
-      // Navodila za iOS ali brskalnike brez neposredne podpore za prompt
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
       if (isIOS) {
         alert('Za namestitev na iPhone/iPad:\n1. Pritisnite gumb za deljenje (kvadrat s puščico navzgor)\n2. Izberite "Dodaj na začetni zaslon" (Add to Home Screen)');
@@ -335,7 +329,6 @@
     document.getElementById('datumKlanja').value = new Date().toISOString().split('T')[0];
     napolniIzbiroMesa(); posodobiCenoPrikaz(); osveziFiltreDatumov(); prikaziShranjeneRacune();
     
-    // Skrij gumb, če je aplikacija že zagnana kot samostojna (standalone PWA)
     if (window.matchMedia('(display-mode: standalone)').matches || navigator.standalone) {
       const btn = document.getElementById('btnInstallPwa');
       if(btn) btn.style.display = 'none';
@@ -470,16 +463,21 @@
 
   function urediPrikazDatuma(dStr){ if(!dStr) return ''; const p=dStr.split('-'); return p.length===3 ? `${p[2]}.${p[1]}.${p[0]}` : dStr; }
 
-  function prikaziShranjeneRacune(){
-    const seznam=document.getElementById('seznamRacunov');
+  function pridobiFiltriraneRacune(){
     const iskanje=document.getElementById('iskanje').value.toLowerCase();
     const izbranDatum=document.getElementById('filterDatum').value;
-    seznam.innerHTML='';
-    const filtrirani = shranjeniRacuni.filter(r=>{
+    return shranjeniRacuni.filter(r=>{
       const ujemaBesedilo = r.priimek.toLowerCase().includes(iskanje) || (r.opombe||'').toLowerCase().includes(iskanje);
       const ujemaDatum = izbranDatum==='vsi' || r.datumKlanja===izbranDatum;
       return ujemaBesedilo && ujemaDatum;
     });
+  }
+
+  function prikaziShranjeneRacune(){
+    const seznam=document.getElementById('seznamRacunov');
+    seznam.innerHTML='';
+    const filtrirani = pridobiFiltriraneRacune();
+
     if(filtrirani.length===0){
       seznam.innerHTML = `<div class="empty"><svg class="icon" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Ni shranjenih računov za izbrane pogoje.</div>`;
       return;
@@ -498,7 +496,8 @@
           <div class="text-right">
             <span class="font-bold text-sm block tabular" style="color:var(--total)">${racun.skupaj.toFixed(2)} €</span>
             <div class="flex gap-2 mt-1 justify-end">
-              <button onclick="natisniRacun(${racun.id})" class="btn-link text-[11px]">Natisni</button>
+              <button onclick="prenesiRacunTxt(${racun.id})" class="btn-link text-[11px]">prenesi .txt</button>
+              <button onclick="kopirajRacunTxt(${racun.id})" class="btn-link text-[11px]">kopiraj</button>
               <button onclick="urediRacun(${racun.id})" class="btn-link text-[11px]">Uredi</button>
               <button onclick="izbrisiRacun(${racun.id})" class="btn-danger-text text-[11px]">Izbriši</button>
             </div>
@@ -579,25 +578,71 @@
     reader.readAsText(file);
   }
 
-  // --- TISK RAČUNA ---
-  function natisniRacun(id){
+  // --- TXT IZVOZ IN KOPIRANJE ---
+  function oblikujRacunVTxt(r){
+    let txt = `========================================\n`;
+    txt += `RAČUN - OBRAČUN MESA\n`;
+    txt += `Stranka: ${r.priimek}\n`;
+    txt += `Datum klanja: ${urediPrikazDatuma(r.datumKlanja)}\n`;
+    if(r.opombe) txt += `Opombe: ${r.opombe}\n`;
+    txt += `----------------------------------------\n`;
+    txt += `POSTAVKE:\n`;
+    r.postavke.forEach(p => {
+      txt += `- ${p.kos.padEnd(16)}: ${p.teza.toFixed(2)} kg x ${p.cenaNaKg.toFixed(2)} €/kg = ${p.skupnaCena.toFixed(2)} €\n`;
+    });
+    txt += `----------------------------------------\n`;
+    txt += `SKUPAJ ZA PLAČILO: ${r.skupaj.toFixed(2)} €\n`;
+    txt += `========================================\n`;
+    return txt;
+  }
+
+  function prenesiRacunTxt(id){
     const r = shranjeniRacuni.find(x=>x.id===id); if(!r) return;
-    const vrstice = r.postavke.map(p=>`<tr><td style="padding:6px 4px;border-bottom:1px solid #ddd">${p.kos}</td><td style="padding:6px 4px;border-bottom:1px solid #ddd;text-align:right">${p.cenaNaKg.toFixed(2)} €</td><td style="padding:6px 4px;border-bottom:1px solid #ddd;text-align:right">${p.teza.toFixed(2)} kg</td><td style="padding:6px 4px;border-bottom:1px solid #ddd;text-align:right">${p.skupnaCena.toFixed(2)} €</td></tr>`).join('');
-    document.getElementById('printArea').innerHTML = `
-      <div style="font-family:Georgia,serif;max-width:600px;margin:0 auto">
-        <h1 style="font-size:20px;margin-bottom:2px">Obračun Mesa</h1>
-        <p style="font-size:12px;color:#555;margin-top:0">Evidenca klanja</p>
-        <hr style="margin:12px 0">
-        <p style="font-size:13px"><strong>Stranka:</strong> ${r.priimek}</p>
-        <p style="font-size:13px"><strong>Datum klanja:</strong> ${urediPrikazDatuma(r.datumKlanja)}</p>
-        ${r.opombe ? `<p style="font-size:13px"><strong>Opombe:</strong> ${r.opombe}</p>` : ''}
-        <table style="width:100%;border-collapse:collapse;margin-top:14px;font-size:13px">
-          <thead><tr style="border-bottom:2px solid #333;text-align:left"><th style="padding:6px 4px">Kos mesa</th><th style="padding:6px 4px;text-align:right">Cena/kg</th><th style="padding:6px 4px;text-align:right">Teža</th><th style="padding:6px 4px;text-align:right">Skupaj</th></tr></thead>
-          <tbody>${vrstice}</tbody>
-        </table>
-        <div style="text-align:right;margin-top:14px;font-size:16px;font-weight:bold">Skupaj za plačilo: ${r.skupaj.toFixed(2)} €</div>
-      </div>`;
-    window.print();
+    const besedilo = oblikujRacunVTxt(r);
+    prenesiTxtDatoteko(besedilo, `racun_${r.priimek}_${r.datumKlanja}.txt`);
+    toast('TXT datoteka računa prenesena.');
+  }
+
+  function kopirajRacunTxt(id){
+    const r = shranjeniRacuni.find(x=>x.id===id); if(!r) return;
+    const besedilo = oblikujRacunVTxt(r);
+    navigator.clipboard.writeText(besedilo).then(() => {
+      toast('Besedilo računa kopirano v odložek!');
+    }).catch(() => {
+      toast('Kopiranje ni uspelo.', 'danger');
+    });
+  }
+
+  function izvoziVseRacuneTxt(){
+    const filtrirani = pridobiFiltriraneRacune();
+    if(filtrirani.length === 0){
+      toast('Ni računov za izvoz.', 'danger');
+      return;
+    }
+    let zbirniTxt = `OBRAČUN MESA - IZVOZ RAČUNOV\n`;
+    zbirniTxt += `Datum izvoza: ${new Date().toLocaleDateString('sl-SI')}\n`;
+    zbirniTxt += `Število računov: ${filtrirani.length}\n\n`;
+    
+    filtrirani.forEach(r => {
+      zbirniTxt += oblikujRacunVTxt(r) + `\n\n`;
+    });
+
+    const izbranDatum = document.getElementById('filterDatum').value;
+    const imeDatoteke = izbranDatum === 'vsi' ? `vsi_racuni_${new Date().toISOString().split('T')[0]}.txt` : `racuni_klanje_${izbranDatum}.txt`;
+    prenesiTxtDatoteko(zbirniTxt, imeDatoteke);
+    toast('Zbirni TXT uspešno preneseš!');
+  }
+
+  function prenesiTxtDatoteko(vsebina, imeDatoteke){
+    const blob = new Blob([vsebina], {type: 'text/plain;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = imeDatoteke;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
   }
 
   // --- STATISTIKA ---
