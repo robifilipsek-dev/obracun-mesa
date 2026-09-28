@@ -69,6 +69,12 @@ input[type=number] { -moz-appearance: textfield; }
       <button id="installAppBtn" onclick="installPWA()" title="Namesti aplikacijo" class="hidden px-3 py-2 text-xs font-bold rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-red-400 flex items-center gap-2 transition-colors">
         📥 Namesti
       </button>
+      <button onclick="odpriStranke()" class="px-3 py-2 text-xs font-bold rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 transition-colors">
+        👥 Stranke
+      </button>
+      <button onclick="odpriCeneGovedine()" class="px-3 py-2 text-xs font-bold rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 transition-colors">
+        🐄 Cene govedine
+      </button>
       <button onclick="odpriNastavitve()" class="px-3 py-2 text-xs font-bold rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 transition-colors">
         ⚙️ Cenik
       </button>
@@ -91,7 +97,8 @@ input[type=number] { -moz-appearance: textfield; }
       <div class="grid grid-cols-2 gap-3">
         <div>
           <label class="label">Stranka</label>
-          <input type="text" id="priimek" placeholder="Stranka" class="input">
+          <input type="text" id="priimek" placeholder="Stranka" class="input" list="strankeList" autocomplete="off">
+          <datalist id="strankeList"></datalist>
         </div>
         <div>
           <label class="label">Datum klanja</label>
@@ -176,7 +183,7 @@ input[type=number] { -moz-appearance: textfield; }
 
 <!-- MODAL: Nastavitve cenika -->
 <div id="modalNastavitve" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
-  <div class="card max-w-md w-full p-5 space-y-4">
+  <div class="card max-w-md w-full p-5 space-y-4 max-h-[92vh] overflow-y-auto">
     <div class="flex justify-between items-center border-b border-zinc-800 pb-2">
       <h3 class="text-base font-bold flex items-center gap-1.5">⚙️ Urejanje cenika</h3>
       <button onclick="zapriNastavitve()" class="text-zinc-400 hover:text-white">✕</button>
@@ -190,6 +197,13 @@ input[type=number] { -moz-appearance: textfield; }
       <button onclick="dodajNovKosMesa()" class="w-full py-1.5 text-xs font-bold bg-red-600 hover:bg-red-500 rounded-lg text-white">Dodaj na cenik</button>
     </div>
     <div id="seznamCenika" class="max-h-48 overflow-y-auto space-y-1.5 pr-1"></div>
+    <div class="bg-zinc-900/50 p-3 rounded-xl border border-zinc-800 space-y-2">
+      <div class="text-xs font-bold text-zinc-400">✨ Gemini · samodejne cene govedine</div>
+      <div class="text-[11px] text-zinc-500">Model: <span class="mono text-zinc-300">gemini-3.1-flash-lite</span> (z iskanjem po spletu)</div>
+      <input type="password" id="geminiKljuc" placeholder="Prilepi Gemini API ključ" class="input text-xs py-1.5" autocomplete="off" oninput="shraniGeminiKljuc()">
+      <a href="https://aistudio.google.com/api-keys" target="_blank" rel="noopener" class="inline-block text-[11px] font-bold text-cyan-400 hover:text-cyan-300">Pridobi API ključ v Google AI Studio ↗</a>
+      <p class="text-[10px] text-zinc-500">Ključ se shrani samo v tej napravi in ni del izvoza JSON. Cenik zgoraj ostane povsem ročen; AI vpliva samo na okno »Cene govedine«.</p>
+    </div>
     <div class="border-t border-zinc-800 pt-3 flex justify-between">
       <button onclick="exportPodatki()" class="text-xs font-bold text-zinc-400 hover:text-zinc-200">📥 Izvoz JSON</button>
       <button onclick="document.getElementById('uvozInput').click()" class="text-xs font-bold text-zinc-400 hover:text-zinc-200">📤 Uvoz JSON</button>
@@ -227,6 +241,48 @@ input[type=number] { -moz-appearance: textfield; }
     <div class="text-right pt-2">
       <button onclick="zapriStatistiko()" class="px-4 py-1.5 text-xs font-bold rounded-lg bg-zinc-800 hover:bg-zinc-700">Zapri</button>
     </div>
+  </div>
+</div>
+
+<!-- MODAL: Stranke -->
+<div id="modalStranke" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+  <div class="card max-w-md w-full p-5 space-y-4">
+    <div class="flex justify-between items-center border-b border-zinc-800 pb-2">
+      <h3 class="text-base font-bold">👥 Stalne stranke</h3>
+      <button onclick="zapriStranke()" class="text-zinc-400 hover:text-white">✕</button>
+    </div>
+    <div class="flex gap-2">
+      <input type="text" id="novaStranka" placeholder="Nova stranka" class="input text-xs py-1.5" onkeydown="if(event.key==='Enter')dodajStrankoRocno()">
+      <button onclick="dodajStrankoRocno()" class="px-3 text-xs font-bold bg-red-600 hover:bg-red-500 rounded-lg text-white whitespace-nowrap">+ Dodaj</button>
+    </div>
+    <p class="text-[11px] text-zinc-500">Stranka se shrani samodejno ob shranjevanju računa. Tapni ime, da ga vneseš v obrazec. Brisanje odstrani le iz seznama, računi ostanejo.</p>
+    <div id="seznamStrank" class="max-h-64 overflow-y-auto space-y-1.5 pr-1"></div>
+    <div class="text-right"><button onclick="zapriStranke()" class="px-4 py-1.5 text-xs font-bold rounded-lg bg-zinc-800 hover:bg-zinc-700">Zapri</button></div>
+  </div>
+</div>
+
+<!-- MODAL: Cene govedine -->
+<div id="modalCene" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+  <div class="card max-w-md w-full p-5 space-y-4 max-h-[92vh] overflow-y-auto">
+    <div class="flex justify-between items-center border-b border-zinc-800 pb-2">
+      <h3 class="text-base font-bold">🐄 Cene govejega mesa v Sloveniji</h3>
+      <button onclick="zapriCeneGovedine()" class="text-zinc-400 hover:text-white">✕</button>
+    </div>
+    <p class="text-xs text-zinc-400">Cene govejega mesa po delih (€/kg)</p>
+    <div class="flex gap-2">
+      <button id="btnGenerirajCene" onclick="generirajCeneAI()" class="flex-1 py-1.5 text-xs font-bold rounded-lg bg-red-600 hover:bg-red-500 text-white transition-colors">✨ Generiraj z AI</button>
+      <button onclick="ponastaviCeneGovedine()" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300">Ročni podatki</button>
+    </div>
+    <div id="statusCeneGovedine" class="text-[11px] text-zinc-500"></div>
+    <div class="border border-zinc-800 rounded-xl overflow-hidden">
+      <table class="w-full text-left text-xs">
+        <thead class="bg-zinc-900 text-zinc-400 border-b border-zinc-800"><tr><th class="p-2.5">Del mesa</th><th class="p-2.5 text-right">€/kg</th></tr></thead>
+        <tbody id="tabelaCeneGovedine" class="divide-y divide-zinc-800/50"></tbody>
+      </table>
+    </div>
+    <div id="viriCeneGovedine" class="text-[11px] space-y-0.5"></div>
+    <p class="text-[11px] text-zinc-500">Okvirne cene, namenjene primerjavi z lastnim cenikom. Ocene AI lahko vsebujejo napake, zato jih preveri.</p>
+    <div class="text-right"><button onclick="zapriCeneGovedine()" class="px-4 py-1.5 text-xs font-bold rounded-lg bg-zinc-800 hover:bg-zinc-700">Zapri</button></div>
   </div>
 </div>
 
@@ -275,6 +331,33 @@ generirajSistemskeIkone();
 let cenik = JSON.parse(localStorage.getItem('mesnica_cenik')) || {
   "Kare":12, "Stegno":13, "Stegno s kostmi":12, "Pleče":10, "Vrat":10, "Rebra":8, "Flam":8, "Prsa":8, "Kosti":2, "Faširano":10
 };
+let stranke = JSON.parse(localStorage.getItem('mesnica_stranke') || 'null');
+if(!Array.isArray(stranke)){
+  const _r = JSON.parse(localStorage.getItem('mesnica_racuni')) || [];
+  stranke = [...new Set(_r.map(r=>(r.priimek||'').trim()).filter(Boolean))];
+  localStorage.setItem('mesnica_stranke', JSON.stringify(stranke));
+}
+const cene_govedine = [
+  ['Goveja pljučna','33,00 €'],
+  ['Goveje stegno','13,00 €'],
+  ['Goveje pleče','12,00 €'],
+  ['Goveja cela zadnja noga','8,00 €'],
+  ['Goveji vrat s kostjo','10,00 €'],
+  ['Goveji vrat brez kosti','11,50 €'],
+  ['Goveji hrbet brez kosti','13,00 €'],
+  ['Goveji hrbet s kostjo','11,00 €'],
+  ['Goveja rebra','7,00 €'],
+  ['Goveji bočnik','11,50 €'],
+  ['Goveji flam','8,00 €'],
+  ['Goveja cela sprednja noga','7,00 €'],
+  ['Mleto meso - govedina','12,00 €'],
+  ['Mleto meso - govedina in svinjina','11,00 €'],
+  ['Goveje kosti','2,20 €']
+];
+const VIR_ROCNIH = 'https://www.kmetijagrobelnik.si/index.php/izdelki/sveze-meso-govedina';
+let ceneAI = null;
+try{ ceneAI = JSON.parse(localStorage.getItem('mesnica_cene_ai') || 'null'); }catch(e){ ceneAI = null; }
+const GEMINI_MODEL = 'gemini-3.1-flash-lite';
 let trenutnePostavke = [];
 let shranjeniRacuni = JSON.parse(localStorage.getItem('mesnica_racuni')) || [];
 let idUrejevanja = null;
@@ -323,6 +406,108 @@ function toast(msg, tip='success'){
   wrap.appendChild(el);
   setTimeout(()=>{ el.style.opacity='0'; setTimeout(()=>el.remove(),250); }, 3000);
 }
+
+function shraniStranke(){
+  stranke.sort((a,b)=>a.localeCompare(b,'sl'));
+  localStorage.setItem('mesnica_stranke', JSON.stringify(stranke));
+  osveziDatalist();
+}
+function dodajStranko(ime){
+  ime=(ime||'').trim(); if(!ime) return false;
+  if(stranke.some(s=>s.toLowerCase()===ime.toLowerCase())) return false;
+  stranke.push(ime); shraniStranke(); return true;
+}
+function osveziDatalist(){
+  const dl=document.getElementById('strankeList'); dl.innerHTML='';
+  stranke.forEach(s=>{ const o=document.createElement('option'); o.value=s; dl.appendChild(o); });
+}
+function odpriStranke(){ prikaziStranke(); const m=document.getElementById('modalStranke'); m.classList.remove('hidden'); m.classList.add('flex'); }
+function zapriStranke(){ const m=document.getElementById('modalStranke'); m.classList.add('hidden'); m.classList.remove('flex'); }
+function prikaziStranke(){
+  const c=document.getElementById('seznamStrank'); c.innerHTML='';
+  if(stranke.length===0){ c.innerHTML='<div class="p-4 text-center text-xs text-zinc-500 italic">Ni shranjenih strank.</div>'; return; }
+  stranke.forEach((s,i)=>{
+    const d=document.createElement('div');
+    d.className='flex items-center justify-between p-2 rounded-lg bg-zinc-900 border border-zinc-800 text-xs';
+    const b=document.createElement('button');
+    b.className='font-medium text-zinc-200 text-left flex-1 hover:text-red-400'; b.textContent='👤 '+s;
+    b.onclick=()=>{ document.getElementById('priimek').value=s; zapriStranke(); document.getElementById('teza').focus(); };
+    const x=document.createElement('button');
+    x.className='text-red-400 font-bold ml-2 hover:text-red-300'; x.textContent='✕'; x.title='Odstrani stranko';
+    x.onclick=()=>izbrisiStranko(i);
+    d.appendChild(b); d.appendChild(x); c.appendChild(d);
+  });
+}
+function dodajStrankoRocno(){
+  const inp=document.getElementById('novaStranka'); const ime=inp.value.trim();
+  if(!ime){ toast('Vnesite ime stranke.','danger'); return; }
+  if(dodajStranko(ime)){ toast(`Stranka "${ime}" dodana.`); } else toast('Stranka že obstaja.','info');
+  inp.value=''; prikaziStranke();
+}
+function izbrisiStranko(i){
+  const ime=stranke[i];
+  if(confirm(`Odstranim stranko "${ime}" s seznama? (Shranjeni računi ostanejo.)`)){
+    stranke.splice(i,1); shraniStranke(); prikaziStranke(); toast('Stranka odstranjena.','info');
+  }
+}
+function esc(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function shraniGeminiKljuc(){ localStorage.setItem('mesnica_gemini_key', document.getElementById('geminiKljuc').value.trim()); }
+
+function prikaziCeneGovedine(){
+  const vrstice = ceneAI ? ceneAI.vrstice : cene_govedine;
+  const tb=document.getElementById('tabelaCeneGovedine'); tb.innerHTML='';
+  vrstice.forEach(([k,c])=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td class="p-2.5 font-medium text-zinc-200">🥩 ${esc(k)}</td><td class="p-2.5 text-right mono text-red-400 font-bold whitespace-nowrap">${esc(c)}</td>`;
+    tb.appendChild(tr);
+  });
+  const st=document.getElementById('statusCeneGovedine');
+  if(ceneAI) st.textContent = `✨ Ocena AI (${GEMINI_MODEL}) · posodobljeno ${new Date(ceneAI.datum).toLocaleString('sl-SI')}`;
+  else st.innerHTML = `Ročni podatki · cenik <a href="${VIR_ROCNIH}" target="_blank" rel="noopener" class="text-cyan-400 hover:text-cyan-300">Kmetija Grobelnik, Žalec ↗</a> €/kg`;
+  const viri=document.getElementById('viriCeneGovedine'); viri.innerHTML='';
+  if(ceneAI && ceneAI.viri && ceneAI.viri.length){
+    viri.innerHTML='<div class="text-zinc-500 font-bold">Viri:</div>'+ceneAI.viri.map(v=>`<a href="${esc(v.uri)}" target="_blank" rel="noopener" class="block text-cyan-400 hover:text-cyan-300 truncate">${esc(v.title||v.uri)} ↗</a>`).join('');
+  }
+}
+function odpriCeneGovedine(){
+  prikaziCeneGovedine();
+  const m=document.getElementById('modalCene'); m.classList.remove('hidden'); m.classList.add('flex');
+}
+function ponastaviCeneGovedine(){
+  ceneAI=null; localStorage.removeItem('mesnica_cene_ai'); prikaziCeneGovedine(); toast('Prikazani so ročni podatki.','info');
+}
+async function generirajCeneAI(){
+  const key=(localStorage.getItem('mesnica_gemini_key')||'').trim();
+  if(!key){ toast('Najprej vnesite Gemini API ključ v ⚙️ Cenik.','danger'); return; }
+  const btn=document.getElementById('btnGenerirajCene');
+  btn.disabled=true; btn.textContent='⏳ Iščem cene...';
+  const imena=cene_govedine.map(r=>r[0]).join('; ');
+  const prompt=`Poišči aktualne cene govejega mesa v Sloveniji (povprečne maloprodajne in kmečke cene, v €/kg). Današnji datum: ${new Date().toISOString().split('T')[0]}. Vrni SAMO JSON tabelo, brez dodatnega besedila in brez markdown ograj, v obliki [{"kos":"...","cena":"..."}]. Uporabi natanko ta imena kosov: ${imena}. Cena naj bo besedilo, npr. "13,00 € – 21,00 €" ali "okoli 12 €". Če cene za kos ne najdeš v virih, napiši "ni podatka". Številk ne izmišljaj.`;
+  try{
+    const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-goog-api-key':key},
+      body:JSON.stringify({contents:[{parts:[{text:prompt}]}],tools:[{google_search:{}}]})
+    });
+    const data=await r.json();
+    if(!r.ok) throw new Error((data.error&&data.error.message)||('HTTP '+r.status));
+    const cand=(data.candidates||[])[0]||{};
+    const text=((cand.content&&cand.content.parts)||[]).map(p=>p.text||'').join('');
+    const m=text.match(/\[[\s\S]*\]/);
+    if(!m) throw new Error('Nepričakovan odgovor modela.');
+    const vrstice=JSON.parse(m[0]).filter(x=>x&&x.kos&&x.cena).map(x=>[String(x.kos),String(x.cena)]);
+    if(!vrstice.length) throw new Error('Model ni vrnil cen.');
+    const viri=(((cand.groundingMetadata||{}).groundingChunks)||[]).map(c=>c.web).filter(w=>w&&/^https?:\/\//.test(w.uri||'')).slice(0,5).map(w=>({uri:w.uri,title:w.title||''}));
+    ceneAI={datum:new Date().toISOString(),vrstice,viri};
+    localStorage.setItem('mesnica_cene_ai', JSON.stringify(ceneAI));
+    prikaziCeneGovedine(); toast('Cene osvežene.');
+  }catch(e){
+    toast('Napaka: '+e.message,'danger');
+  }finally{
+    btn.disabled=false; btn.textContent='✨ Generiraj z AI';
+  }
+}
+function zapriCeneGovedine(){ const m=document.getElementById('modalCene'); m.classList.add('hidden'); m.classList.remove('flex'); }
 
 function shraniCenikVShrambo(){ localStorage.setItem('mesnica_cenik', JSON.stringify(cenik)); }
 
@@ -380,6 +565,7 @@ function shraniRacun(){
   if(!datumKlanja){ toast('Izberite datum klanja.','danger'); return; }
   if(trenutnePostavke.length===0){ toast('Dodajte vsaj eno postavko.','danger'); return; }
   
+  dodajStranko(priimek);
   const skupnaVrednost = trenutnePostavke.reduce((s,p)=>s+p.skupnaCena,0);
   if(idUrejevanja){
     const idx = shranjeniRacuni.findIndex(r=>r.id===idUrejevanja);
@@ -481,7 +667,7 @@ function prikaziShranjeneRacune(){
   });
 }
 
-function odpriNastavitve(){ prikaziCenikVNastavitvah(); document.getElementById('modalNastavitve').classList.remove('hidden'); document.getElementById('modalNastavitve').classList.add('flex'); }
+function odpriNastavitve(){ document.getElementById('geminiKljuc').value=localStorage.getItem('mesnica_gemini_key')||''; prikaziCenikVNastavitvah(); document.getElementById('modalNastavitve').classList.remove('hidden'); document.getElementById('modalNastavitve').classList.add('flex'); }
 function zapriNastavitve(){ document.getElementById('modalNastavitve').classList.add('hidden'); document.getElementById('modalNastavitve').classList.remove('flex'); napolniIzbiroMesa(); }
 
 function prikaziCenikVNastavitvah(){
@@ -518,7 +704,7 @@ function dodajNovKosMesa(){
 }
 
 function exportPodatki(){
-  const blob = new Blob([JSON.stringify({cenik, racuni:shranjeniRacuni},null,2)], {type:'application/json'});
+  const blob = new Blob([JSON.stringify({cenik, racuni:shranjeniRacuni, stranke},null,2)], {type:'application/json'});
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
   a.download = `obracun-mesa-backup.json`; a.click();
 }
@@ -529,7 +715,7 @@ function importPodatki(e){
   reader.onload = (evt)=>{
     try{
       const d = JSON.parse(evt.target.result);
-      if(d.cenik && d.racuni){ cenik=d.cenik; shranjeniRacuni=d.racuni; shraniCenikVShrambo(); localStorage.setItem('mesnica_racuni', JSON.stringify(shranjeniRacuni)); location.reload(); }
+      if(d.cenik && d.racuni){ cenik=d.cenik; shranjeniRacuni=d.racuni; if(Array.isArray(d.stranke)) localStorage.setItem('mesnica_stranke', JSON.stringify(d.stranke)); shraniCenikVShrambo(); localStorage.setItem('mesnica_racuni', JSON.stringify(shranjeniRacuni)); location.reload(); }
     }catch(err){ toast('Datoteka ni veljavna.','danger'); }
   };
   reader.readAsText(file);
@@ -597,7 +783,7 @@ function izracunajInPrikaziStatistiko(){
 
 window.onload = () => {
   document.getElementById('datumKlanja').value = new Date().toISOString().split('T')[0];
-  napolniIzbiroMesa(); osveziFiltreDatumov(); prikaziShranjeneRacune();
+  napolniIzbiroMesa(); osveziFiltreDatumov(); prikaziShranjeneRacune(); osveziDatalist();
 };
 </script>
 </body>
