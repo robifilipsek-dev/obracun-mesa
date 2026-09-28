@@ -462,7 +462,7 @@ function prikaziCeneGovedine(){
     tb.appendChild(tr);
   });
   const st=document.getElementById('statusCeneGovedine');
-  if(ceneAI) st.textContent = `✨ Ocena AI (${GEMINI_MODEL}) · posodobljeno ${new Date(ceneAI.datum).toLocaleString('sl-SI')}`;
+  if(ceneAI) st.textContent = `✨ Ocena AI (${GEMINI_MODEL}) · posodobljeno ${new Date(ceneAI.datum).toLocaleString('sl-SI')}` + (ceneAI.brezIskanja ? ' · ⚠️ brez iskanja po spletu, manj zanesljivo' : '');
   else st.innerHTML = `Ročni podatki · cenik <a href="${VIR_ROCNIH}" target="_blank" rel="noopener" class="text-cyan-400 hover:text-cyan-300">Kmetija Grobelnik, Žalec ↗</a> €/kg`;
   const viri=document.getElementById('viriCeneGovedine'); viri.innerHTML='';
   if(ceneAI && ceneAI.viri && ceneAI.viri.length){
@@ -482,15 +482,28 @@ async function generirajCeneAI(){
   const btn=document.getElementById('btnGenerirajCene');
   btn.disabled=true; btn.textContent='⏳ Iščem cene...';
   const imena=cene_govedine.map(r=>r[0]).join('; ');
-  const prompt=`Poišči aktualne cene govejega mesa v Sloveniji (povprečne maloprodajne in kmečke cene, v €/kg). Današnji datum: ${new Date().toISOString().split('T')[0]}. Vrni SAMO JSON tabelo, brez dodatnega besedila in brez markdown ograj, v obliki [{"kos":"...","cena":"..."}]. Uporabi natanko ta imena kosov: ${imena}. Cena naj bo besedilo, npr. "13,00 € – 21,00 €" ali "okoli 12 €". Če cene za kos ne najdeš v virih, napiši "ni podatka". Številk ne izmišljaj.`;
-  try{
+  const osnova=`Cene govejega mesa v Sloveniji (povprečne maloprodajne in kmečke cene, v €/kg). Današnji datum: ${new Date().toISOString().split('T')[0]}. Vrni SAMO JSON tabelo, brez dodatnega besedila in brez markdown ograj, v obliki [{"kos":"...","cena":"..."}]. Uporabi natanko ta imena kosov: ${imena}. Cena naj bo besedilo, npr. "13,00 € – 21,00 €" ali "okoli 12 €". Če cene ne najdeš ali ne veš, napiši "ni podatka". Številk ne izmišljaj.`;
+  async function klici(zIskanjem){
+    const prompt = (zIskanjem ? 'Poišči aktualne ' : 'Na podlagi svojega znanja (nimaš dostopa do spleta) oceni ') + osnova;
+    const body={contents:[{parts:[{text:prompt}]}]};
+    if(zIskanjem) body.tools=[{google_search:{}}];
     const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`,{
-      method:'POST',
-      headers:{'Content-Type':'application/json','x-goog-api-key':key},
-      body:JSON.stringify({contents:[{parts:[{text:prompt}]}],tools:[{google_search:{}}]})
+      method:'POST', headers:{'Content-Type':'application/json','x-goog-api-key':key}, body:JSON.stringify(body)
     });
-    const data=await r.json();
-    if(!r.ok) throw new Error((data.error&&data.error.message)||('HTTP '+r.status));
+    const data=await r.json().catch(()=>({}));
+    if(!r.ok){ const e=new Error((data.error&&data.error.message)||('HTTP '+r.status)); e.status=r.status; throw e; }
+    return data;
+  }
+  try{
+    let data, brezIskanja=false;
+    try{
+      data=await klici(true);
+    }catch(e){
+      if(e.status===429 || /quota|RESOURCE_EXHAUSTED|billing|not available|free tier/i.test(e.message)){
+        toast('Iskanje po spletu ni na voljo (brezplačni paket). Poskušam brez iskanja...','info');
+        data=await klici(false); brezIskanja=true;
+      } else throw e;
+    }
     const cand=(data.candidates||[])[0]||{};
     const text=((cand.content&&cand.content.parts)||[]).map(p=>p.text||'').join('');
     const m=text.match(/\[[\s\S]*\]/);
@@ -498,9 +511,9 @@ async function generirajCeneAI(){
     const vrstice=JSON.parse(m[0]).filter(x=>x&&x.kos&&x.cena).map(x=>[String(x.kos),String(x.cena)]);
     if(!vrstice.length) throw new Error('Model ni vrnil cen.');
     const viri=(((cand.groundingMetadata||{}).groundingChunks)||[]).map(c=>c.web).filter(w=>w&&/^https?:\/\//.test(w.uri||'')).slice(0,5).map(w=>({uri:w.uri,title:w.title||''}));
-    ceneAI={datum:new Date().toISOString(),vrstice,viri};
+    ceneAI={datum:new Date().toISOString(),vrstice,viri,brezIskanja};
     localStorage.setItem('mesnica_cene_ai', JSON.stringify(ceneAI));
-    prikaziCeneGovedine(); toast('Cene osvežene.');
+    prikaziCeneGovedine(); toast(brezIskanja?'Cene ocenjene brez iskanja po spletu.':'Cene osvežene.', brezIskanja?'info':'success');
   }catch(e){
     toast('Napaka: '+e.message,'danger');
   }finally{
