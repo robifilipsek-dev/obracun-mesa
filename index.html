@@ -181,6 +181,14 @@ button {
           </button>
         </div>
 
+        <!-- REZERVNI VNOS (narekovanje prek tipkovnice, deluje tudi na iOS) -->
+        <div id="glasFallback" style="display:none" class="gap-2 items-center">
+          <input type="text" id="glasFallbackInput" class="input" autocomplete="off" autocapitalize="off" enterkeyhint="done"
+                 placeholder='Npr. "stegno 12,5" (tapni 🎤 na tipkovnici)'
+                 onkeydown="if(event.key==='Enter'){potrdiTekstovniVnos();}">
+          <button onclick="potrdiTekstovniVnos()" class="px-3 py-2 text-xs font-bold rounded-lg bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-100">OK</button>
+        </div>
+
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="label">Del mesa</label>
@@ -483,28 +491,94 @@ function pretvoriSTezo(vnos) {
   return parseFloat(s);
 }
 
-// GLASOVNA PREPOZNAVA (Podpora za iOS Safari in WebKit)
+// GLASOVNA PREPOZNAVA (Android Chrome + iOS Safari) z izpisom prave napake
+const GLAS_JEZIK = 'sl-SI';
 let recognition = null;
+let glasImelRezultat = false;
+let glasImelNapako = false;
+
+function glasOkolje() {
+  const ua = navigator.userAgent || '';
+  const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const standalone = window.navigator.standalone === true ||
+    (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+  return { isIOS, standalone, secure: window.isSecureContext, proto: location.protocol };
+}
+
+function prikaziGlasFallback(pokazi, fokus) {
+  const w = document.getElementById('glasFallback');
+  if (!w) return;
+  w.style.display = pokazi ? 'flex' : 'none';
+  if (pokazi && fokus) setTimeout(() => document.getElementById('glasFallbackInput').focus(), 150);
+}
+
+function potrdiTekstovniVnos() {
+  const inp = document.getElementById('glasFallbackInput');
+  const t = (inp.value || '').trim().toLowerCase();
+  if (!t) return;
+  obdelajGlasovniVnos(t);
+  inp.value = '';
+}
+
+function glasSporocilo(koda) {
+  const env = glasOkolje();
+  const iosTip = 'iOS: Nastavitve → Splošno → Tipkovnica → Omogoči narekovanje; Nastavitve → Zasebnost → Prepoznavanje govora in Mikrofon → Safari.';
+  switch (koda) {
+    case 'not-allowed':
+      if (!env.secure) return `[not-allowed] Stran ni na https (${env.proto}). Mikrofon dela samo prek https.`;
+      if (env.isIOS && env.standalone) return '[not-allowed] iOS ne dovoli prepoznave v aplikaciji z začetnega zaslona. Odpri stran v Safariju ali uporabi 🎤 na tipkovnici.';
+      return env.isIOS
+        ? '[not-allowed] Dostop do mikrofona/govora zavrnjen. V Safariju: aA → Nastavitve spletnega mesta → Mikrofon → Dovoli. ' + iosTip
+        : '[not-allowed] Dostop do mikrofona je zavrnjen. Dovoli mikrofon v nastavitvah brskalnika za to stran.';
+    case 'service-not-allowed':
+      return '[service-not-allowed] Storitev prepoznave govora ni dovoljena. ' + (env.isIOS ? iosTip : 'Preveri nastavitve brskalnika.');
+    case 'language-not-supported':
+      return `[language-not-supported] Jezik ${GLAS_JEZIK} ni podprt na tej napravi. Uporabi 🎤 na tipkovnici.`;
+    case 'audio-capture':
+      return '[audio-capture] Mikrofona ni mogoče uporabiti (ga uporablja druga aplikacija?).';
+    case 'network':
+      return '[network] Težava z omrežjem pri prepoznavi govora.';
+    case 'no-speech':
+      return '[no-speech] Nisem zaznal govora, poskusi znova.';
+    case 'aborted':
+      return '[aborted] Prepoznava je bila prekinjena.';
+    default:
+      return '[' + koda + '] Neznana napaka pri prepoznavi glasu.';
+  }
+}
+
 function poslusajGlasovno() {
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SpeechRecognition) {
-    toast('Vaš brskalnik ali iOS verzija ne podpira glasovnega vnosa.', 'danger');
-    return;
-  }
-
   const micBtn = document.getElementById('micBtn');
   const micText = document.getElementById('micText');
+  const env = glasOkolje();
 
-  if (recognition && recognition.isListening) {
-    recognition.stop();
+  if (!SpeechRecognition) {
+    toast('Ta brskalnik nima glasovne prepoznave. Uporabi 🎤 na tipkovnici v polju spodaj.', 'danger', 6000);
+    prikaziGlasFallback(true, true);
     return;
   }
+
+  if (recognition && recognition.isListening) {
+    try { recognition.stop(); } catch (e) {}
+    return;
+  }
+
+  glasImelRezultat = false;
+  glasImelNapako = false;
+
+  const reset = () => {
+    if (recognition) recognition.isListening = false;
+    micBtn.classList.remove('mic-active');
+    micText.textContent = 'Govori';
+  };
 
   try {
     recognition = new SpeechRecognition();
-    recognition.lang = 'sl-SI';
+    recognition.lang = GLAS_JEZIK;
     recognition.continuous = false;
     recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
 
     recognition.onstart = () => {
       recognition.isListening = true;
@@ -513,24 +587,8 @@ function poslusajGlasovno() {
       toast('Govorite (npr. "Stegno 12,5")', 'info');
     };
 
-    recognition.onend = () => {
-      recognition.isListening = false;
-      micBtn.classList.remove('mic-active');
-      micText.textContent = 'Govori';
-    };
-
-    recognition.onerror = (event) => {
-      recognition.isListening = false;
-      micBtn.classList.remove('mic-active');
-      micText.textContent = 'Govori';
-      if (event.error === 'not-allowed') {
-        toast('Dostop do mikrofona je zavrnjen v nastavitvah.', 'danger');
-      } else {
-        toast('Napaka ali prekinitev pri prepoznavi glasu.', 'danger');
-      }
-    };
-
     recognition.onresult = (event) => {
+      glasImelRezultat = true;
       if (event.results && event.results[0] && event.results[0][0]) {
         const besedilo = event.results[0][0].transcript.toLowerCase();
         toast(`Prepoznano: "${besedilo}"`, 'info');
@@ -538,9 +596,35 @@ function poslusajGlasovno() {
       }
     };
 
+    recognition.onerror = (event) => {
+      glasImelNapako = true;
+      reset();
+      console.warn('SpeechRecognition error:', event.error, event.message || '', env);
+      toast(glasSporocilo(event.error), 'danger', 8000);
+      if (['not-allowed', 'service-not-allowed', 'language-not-supported', 'audio-capture'].includes(event.error)) {
+        prikaziGlasFallback(true, false);
+      }
+    };
+
+    recognition.onend = () => {
+      const bilPoslusanje = recognition.isListening;
+      reset();
+      // iOS pogosto konča brez napake in brez rezultata, če ni dovoljenja / narekovanja
+      if (!glasImelRezultat && !glasImelNapako) {
+        toast(bilPoslusanje
+          ? 'Nisem zaznal govora. Poskusi znova ali uporabi 🎤 na tipkovnici.'
+          : 'Prepoznava se je končala, preden se je začela (mikrofon/narekovanje ni dovoljeno). Uporabi 🎤 na tipkovnici v polju spodaj.',
+          'danger', 7000);
+        if (!bilPoslusanje) prikaziGlasFallback(true, false);
+      }
+    };
+
     recognition.start();
   } catch (e) {
-    toast('Zagon mikrofona ni uspel.', 'danger');
+    reset();
+    console.warn('SpeechRecognition start failed:', e);
+    toast('Zagon mikrofona ni uspel: ' + (e && e.name ? e.name : e), 'danger', 6000);
+    prikaziGlasFallback(true, true);
   }
 }
 
@@ -594,13 +678,13 @@ function obdelajGlasovniVnos(besedilo) {
   }
 }
 
-function toast(msg, tip='success'){
+function toast(msg, tip='success', ms=3000){
   const wrap = document.getElementById('toastWrap');
   const el = document.createElement('div');
   el.className = `toast toast-${tip}`;
   el.textContent = msg;
   wrap.appendChild(el);
-  setTimeout(()=>{ el.style.opacity='0'; setTimeout(()=>el.remove(),250); }, 3000);
+  setTimeout(()=>{ el.style.opacity='0'; setTimeout(()=>el.remove(),250); }, ms);
 }
 
 function shraniStranke(){
