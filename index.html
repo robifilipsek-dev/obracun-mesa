@@ -2,7 +2,7 @@
 <html lang="sl" class="dark">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Obračun Mesa</title>
 
 <!-- Apple iOS podpora za namestitev kot aplikacija (PWA) -->
@@ -27,24 +27,72 @@ tailwind.config={darkMode:'class',theme:{extend:{colors:{brand:{red:'#ef4444',da
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <style>
-body{font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:-.011em}.mono{font-family:'JetBrains Mono',monospace}
-.card{background:rgba(24,24,27,.94);border:1px solid #3f3f46;border-radius:16px;box-shadow:0 12px 30px rgba(0,0,0,.18)}
-.input{background:#09090b;border:1px solid #3f3f46;color:#fafafa;border-radius:10px;padding:.75rem 1rem;font-size:.9rem;width:100%;outline:none;transition:all 0.2s}
-.input:focus{border-color:#ef4444;box-shadow:0 0 0 3px rgba(239,68,68,.1)}
+/* iOS Prilagoditve */
+body {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  letter-spacing: -.011em;
+  padding-top: max(0.75rem, env(safe-area-inset-top));
+  padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+  padding-left: max(0.75rem, env(safe-area-inset-left));
+  padding-right: max(0.75rem, env(safe-area-inset-right));
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mono { font-family: 'JetBrains Mono', monospace; }
+.card { background: rgba(24,24,27,.94); border: 1px solid #3f3f46; border-radius: 16px; box-shadow: 0 12px 30px rgba(0,0,0,.18); }
+
+/* Preventivno preprečevanje iOS Safari Zoom-a ob kliku na vnosno polje (font-size mora biti vsaj 16px na mobilcih) */
+.input {
+  background: #09090b;
+  border: 1px solid #3f3f46;
+  color: #fafafa;
+  border-radius: 10px;
+  padding: .75rem 1rem;
+  font-size: 16px; /* 16px za preprečitev zooms na iOS */
+  width: 100%;
+  outline: none;
+  transition: all 0.2s;
+  -webkit-appearance: none;
+}
+@media (min-width: 640px) {
+  .input { font-size: 0.9rem; }
+}
+.input:focus { border-color: #ef4444; box-shadow: 0 0 0 3px rgba(239,68,68,.1); }
 
 input[type=number]::-webkit-inner-spin-button, 
 input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 input[type=number] { -moz-appearance: textfield; }
 
-.label{display:block;font-size:.75rem;font-weight:700;color:#d4d4d8;margin-bottom:.4rem}
-.result{font-family:'JetBrains Mono',monospace;font-weight:700}
+.label { display: block; font-size: .75rem; font-weight: 700; color: #d4d4d8; margin-bottom: .4rem; }
+.result { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
 
-#toastWrap{position:fixed;left:50%;transform:translateX(-50%);bottom:20px;display:flex;flex-direction:column;gap:8px;z-index:100;pointer-events:none}
-.toast{pointer-events:auto;padding:10px 16px;border-radius:12px;font-size:13px;font-weight:600;box-shadow:0 6px 20px rgba(0,0,0,.3);border:1px solid;animation:toastIn .2s ease-out}
-.toast-success{background:#064e3b;color:#a7f3d0;border-color:#059669}
-.toast-danger{background:#7f1d1d;color:#fecaca;border-color:#dc2626}
-.toast-info{background:#1e3a8a;color:#bfdbfe;border-color:#2563eb}
-@keyframes toastIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+/* Smooth scrolling za iOS */
+.overflow-y-auto {
+  -webkit-overflow-scrolling: touch;
+}
+
+button {
+  touch-action: manipulation;
+}
+
+#toastWrap {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(20px + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 100;
+  pointer-events: none;
+  width: 90%;
+  max-width: 400px;
+}
+.toast { pointer-events: auto; padding: 10px 16px; border-radius: 12px; font-size: 13px; font-weight: 600; box-shadow: 0 6px 20px rgba(0,0,0,.3); border: 1px solid; animation: toastIn .2s ease-out; text-align: center; }
+.toast-success { background: #064e3b; color: #a7f3d0; border-color: #059669; }
+.toast-danger { background: #7f1d1d; color: #fecaca; border-color: #dc2626; }
+.toast-info { background: #1e3a8a; color: #bfdbfe; border-color: #2563eb; }
+@keyframes toastIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
 /* Animacija za gumb med poslušanjem */
 @keyframes pulseMic {
@@ -59,7 +107,7 @@ input[type=number] { -moz-appearance: textfield; }
 }
 </style>
 </head>
-<body class="bg-zinc-950 text-zinc-100 min-h-screen p-3 md:p-6 flex flex-col items-center">
+<body class="bg-zinc-950 text-zinc-100 min-h-screen flex flex-col items-center justify-start">
 
 <div id="toastWrap"></div>
 
@@ -77,7 +125,7 @@ input[type=number] { -moz-appearance: textfield; }
       </div>
     </div>
 
-    <!-- Navigacijski gumbi: na mobilnih napravah v 2 vrsticah (grid), na večjih v flex vrstici -->
+    <!-- Navigacijski gumbi -->
     <div class="grid grid-cols-2 sm:flex sm:flex-wrap items-center justify-center gap-2 w-full sm:w-auto">
       <button id="installAppBtn" onclick="installPWA()" title="Namesti aplikacijo" class="hidden col-span-2 sm:col-span-1 px-3 py-2 text-xs font-bold rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-red-400 flex items-center justify-center gap-2 transition-colors">
         📥 Namesti
@@ -189,7 +237,7 @@ input[type=number] { -moz-appearance: textfield; }
 
       <div class="grid grid-cols-2 gap-2">
         <select id="filterDatum" onchange="prikaziShranjeneRacune()" class="input py-1.5 text-xs"><option value="vsi">Vsi datumi</option></select>
-        <input type="text" id="iskanje" oninput="prikaziShranjeneRacune()" placeholder="Išči stranko..." class="input py-1.5 text-xs">
+        <input type="text" id="iskanje" oninput="prikaziShranjeneRacune()" placeholder="Išči stranku..." class="input py-1.5 text-xs">
       </div>
 
       <div id="seznamRacunov" class="space-y-3 max-h-[480px] overflow-y-auto pr-1"></div>
@@ -203,10 +251,9 @@ input[type=number] { -moz-appearance: textfield; }
   <div class="card max-w-md w-full p-5 space-y-4 max-h-[92vh] overflow-y-auto">
     <div class="flex justify-between items-center border-b border-zinc-800 pb-2">
       <h3 class="text-base font-bold flex items-center gap-1.5">⚙ Nastavitve</h3>
-      <button onclick="zapriNastavitve()" class="text-zinc-400 hover:text-white">✕</button>
+      <button onclick="zapriNastavitve()" class="text-zinc-400 hover:text-white p-1">✕</button>
     </div>
 
-    <!-- PRESTAVLJEN GUMB ZA CENE GOVEDINE -->
     <div class="bg-zinc-900/50 p-3 rounded-xl border border-zinc-800 space-y-2">
       <div class="text-xs font-bold text-zinc-400 flex items-center gap-1"><span>🐄</span> Tržne cene</div>
       <button onclick="odpriCeneGovedineIZNastavitev()" class="w-full py-2 text-xs font-bold rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-200 transition-colors flex items-center justify-center gap-2">
@@ -246,7 +293,7 @@ input[type=number] { -moz-appearance: textfield; }
   <div class="card max-w-xl w-full p-5 space-y-4">
     <div class="flex justify-between items-center border-b border-zinc-800 pb-2">
       <h3 class="text-base font-bold flex items-center gap-1.5">📊 Skupna statistika klanja</h3>
-      <button onclick="zapriStatistiko()" class="text-zinc-400 hover:text-white">✕</button>
+      <button onclick="zapriStatistiko()" class="text-zinc-400 hover:text-white p-1">✕</button>
     </div>
     <div class="flex items-center gap-3">
       <label class="text-xs text-zinc-400 font-bold">Datum klanja:</label>
@@ -275,13 +322,13 @@ input[type=number] { -moz-appearance: textfield; }
   <div class="card max-w-md w-full p-5 space-y-4">
     <div class="flex justify-between items-center border-b border-zinc-800 pb-2">
       <h3 class="text-base font-bold">👥 Stalne stranke</h3>
-      <button onclick="zapriStranke()" class="text-zinc-400 hover:text-white">✕</button>
+      <button onclick="zapriStranke()" class="text-zinc-400 hover:text-white p-1">✕</button>
     </div>
     <div class="flex gap-2">
       <input type="text" id="novaStranka" placeholder="Nova stranka" class="input text-xs py-1.5" onkeydown="if(event.key==='Enter')dodajStrankoRocno()">
       <button onclick="dodajStrankoRocno()" class="px-3 text-xs font-bold bg-red-600 hover:bg-red-500 rounded-lg text-white whitespace-nowrap">+ Dodaj</button>
     </div>
-    <p class="text-[11px] text-zinc-500">Stranka se shrani samodejno ob shranjevanju računa. Tapni ime, da ga vneseš v obrazec. Brisanje odstrani le iz seznama, računi ostanejo.</p>
+    <p class="text-[11px] text-zinc-500">Stranka se shrani samodejno ob shranjevanju računa. Tapni ime, da ga vneseš v obrazec.</p>
     <div id="seznamStrank" class="max-h-64 overflow-y-auto space-y-1.5 pr-1"></div>
     <div class="text-right"><button onclick="zapriStranke()" class="px-4 py-1.5 text-xs font-bold rounded-lg bg-zinc-800 hover:bg-zinc-700">Zapri</button></div>
   </div>
@@ -292,7 +339,7 @@ input[type=number] { -moz-appearance: textfield; }
   <div class="card max-w-md w-full p-5 space-y-4 max-h-[92vh] overflow-y-auto">
     <div class="flex justify-between items-center border-b border-zinc-800 pb-2">
       <h3 class="text-base font-bold">🐄 Cene govejega mesa v Sloveniji</h3>
-      <button onclick="zapriCeneGovedine()" class="text-zinc-400 hover:text-white">✕</button>
+      <button onclick="zapriCeneGovedine()" class="text-zinc-400 hover:text-white p-1">✕</button>
     </div>
     <p class="text-xs text-zinc-400">Cene govejega mesa po delih (€/kg)</p>
     <div class="flex gap-2">
@@ -307,7 +354,7 @@ input[type=number] { -moz-appearance: textfield; }
       </table>
     </div>
     <div id="viriCeneGovedine" class="text-[11px] space-y-0.5"></div>
-    <p class="text-[11px] text-zinc-500">Okvirne cene, namenjene primerjavi z lastnim cenikom. Ocene AI lahko vsebujejo napake, zato jih preveri.</p>
+    <p class="text-[11px] text-zinc-500">Okvirne cene, namenjene primerjavi z lastnim cenikom. Ocene AI lahko vsebujejo napake.</p>
     <div class="text-right"><button onclick="zapriCeneGovedine()" class="px-4 py-1.5 text-xs font-bold rounded-lg bg-zinc-800 hover:bg-zinc-700">Zapri</button></div>
   </div>
 </div>
@@ -423,7 +470,6 @@ function allowComma(e) {
 }
 
 function popraviInputLočilo(input) {
-  // Sprotno pretvarjanje vejice v piko
   if (input.value.includes(',')) {
     const pos = input.selectionStart;
     input.value = input.value.replace(',', '.');
@@ -437,12 +483,12 @@ function pretvoriSTezo(vnos) {
   return parseFloat(s);
 }
 
-// GLASOVNA PREPOZNAVA
+// GLASOVNA PREPOZNAVA (Podpora za iOS Safari in WebKit)
 let recognition = null;
 function poslusajGlasovno() {
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SpeechRecognition) {
-    toast('Vaš brskalnik ne podpira glasovnega vnosa.', 'danger');
+    toast('Vaš brskalnik ali iOS verzija ne podpira glasovnega vnosa.', 'danger');
     return;
   }
 
@@ -454,42 +500,51 @@ function poslusajGlasovno() {
     return;
   }
 
-  recognition = new SpeechRecognition();
-  recognition.lang = 'sl-SI';
-  recognition.continuous = false;
-  recognition.interimResults = false;
+  try {
+    recognition = new SpeechRecognition();
+    recognition.lang = 'sl-SI';
+    recognition.continuous = false;
+    recognition.interimResults = false;
 
-  recognition.onstart = () => {
-    recognition.isListening = true;
-    micBtn.classList.add('mic-active');
-    micText.textContent = 'Poslušam...';
-    toast('Govorite (npr. "Stegno 12,5")', 'info');
-  };
+    recognition.onstart = () => {
+      recognition.isListening = true;
+      micBtn.classList.add('mic-active');
+      micText.textContent = 'Poslušam...';
+      toast('Govorite (npr. "Stegno 12,5")', 'info');
+    };
 
-  recognition.onend = () => {
-    recognition.isListening = false;
-    micBtn.classList.remove('mic-active');
-    micText.textContent = 'Govori';
-  };
+    recognition.onend = () => {
+      recognition.isListening = false;
+      micBtn.classList.remove('mic-active');
+      micText.textContent = 'Govori';
+    };
 
-  recognition.onerror = (event) => {
-    recognition.isListening = false;
-    micBtn.classList.remove('mic-active');
-    micText.textContent = 'Govori';
-    toast('Napaka pri prepoznavi glasu.', 'danger');
-  };
+    recognition.onerror = (event) => {
+      recognition.isListening = false;
+      micBtn.classList.remove('mic-active');
+      micText.textContent = 'Govori';
+      if (event.error === 'not-allowed') {
+        toast('Dostop do mikrofona je zavrnjen v nastavitvah.', 'danger');
+      } else {
+        toast('Napaka ali prekinitev pri prepoznavi glasu.', 'danger');
+      }
+    };
 
-  recognition.onresult = (event) => {
-    const besedilo = event.results[0][0].transcript.toLowerCase();
-    toast(`Prepoznano: "${besedilo}"`, 'info');
-    obdelajGlasovniVnos(besedilo);
-  };
+    recognition.onresult = (event) => {
+      if (event.results && event.results[0] && event.results[0][0]) {
+        const besedilo = event.results[0][0].transcript.toLowerCase();
+        toast(`Prepoznano: "${besedilo}"`, 'info');
+        obdelajGlasovniVnos(besedilo);
+      }
+    };
 
-  recognition.start();
+    recognition.start();
+  } catch (e) {
+    toast('Zagon mikrofona ni uspel.', 'danger');
+  }
 }
 
 function obdelajGlasovniVnos(besedilo) {
-  // 1. Poišči najbolj ustrezen kos mesa iz cenika
   const kosi = Object.keys(cenik);
   let najdenKos = null;
 
@@ -500,7 +555,6 @@ function obdelajGlasovniVnos(besedilo) {
     }
   }
 
-  // Če ni neposrednega ujemanja, preveri delna imena
   if (!najdenKos) {
     for (let kos of kosi) {
       const besede = kos.toLowerCase().split(' ');
@@ -516,13 +570,10 @@ function obdelajGlasovniVnos(besedilo) {
     posodobiCenoPrikaz();
   }
 
-  // 2. Izlušči številko teže iz besedila
-  // Zamenjaj besedne zapise številk / ločil v standardne
   let tekstStevila = besedilo
     .replace(/vejica|pika|celih|zareza/g, '.')
     .replace(/kilo|kilogramov|kilograma|kilograme|kg/g, '');
 
-  // Iskanje vzorca številke (npr. 12.5 ali 12 ali 0.5)
   const stevilkaMatch = tekstStevila.match(/\d+([\.\,]\d+)?/);
   if (stevilkaMatch) {
     let tezaVal = stevilkaMatch[0].replace(',', '.');
@@ -538,7 +589,7 @@ function obdelajGlasovniVnos(besedilo) {
     if (najdenKos) {
       toast(`Izbran kos ${najdenKos}. Vnesite še težo.`, 'info');
     } else {
-      toast('Nisem razločil kosa mesa ali teže. Poskusite ponovno.', 'danger');
+      toast('Nisem razločil kosa mesa ali teže.', 'danger');
     }
   }
 }
@@ -578,7 +629,7 @@ function prikaziStranke(){
     b.className='font-medium text-zinc-200 text-left flex-1 hover:text-red-400'; b.textContent='👤 '+s;
     b.onclick=()=>{ document.getElementById('priimek').value=s; zapriStranke(); document.getElementById('teza').focus(); };
     const x=document.createElement('button');
-    x.className='text-red-400 font-bold ml-2 hover:text-red-300'; x.textContent='✕'; x.title='Odstrani stranko';
+    x.className='text-red-400 font-bold ml-2 hover:text-red-300 p-1'; x.textContent='✕'; x.title='Odstrani stranko';
     x.onclick=()=>izbrisiStranko(i);
     d.appendChild(b); d.appendChild(x); c.appendChild(d);
   });
@@ -697,7 +748,7 @@ function osveziTabeloPostavk(){
       <td class="py-2 text-right mono text-zinc-400">${p.cenaNaKg.toFixed(2)}</td>
       <td class="py-2 text-right mono text-zinc-300">${p.teza.toFixed(2)}</td>
       <td class="py-2 text-right mono font-bold text-red-400">${p.skupnaCena.toFixed(2)} €</td>
-      <td class="py-2 text-center"><button onclick="odstraniPostavko(${index})" class="text-red-400 font-bold hover:text-red-300">✕</button></td>`;
+      <td class="py-2 text-center"><button onclick="odstraniPostavko(${index})" class="text-red-400 font-bold hover:text-red-300 p-1">✕</button></td>`;
     tbody.appendChild(tr);
   });
   document.getElementById('skupajZaPlacilo').textContent = `${skupaj.toFixed(2)} €`;
@@ -825,7 +876,7 @@ function prikaziCenikVNastavitvah(){
       <div class="flex items-center gap-1">
         <input type="text" inputmode="decimal" value="${cenik[kos]}" onchange="posodobiCenoMesa('${kos}', this.value)" class="input w-16 py-1 text-right text-xs mono" oninput="popraviInputLočilo(this)" onkeypress="allowComma(event)">
         <span class="text-zinc-500">€/kg</span>
-        <button onclick="izbrisiKosMesa('${kos}')" class="text-red-400 font-bold ml-1">✕</button>
+        <button onclick="izbrisiKosMesa('${kos}')" class="text-red-400 font-bold ml-1 p-1">✕</button>
       </div>`;
     container.appendChild(div);
   });
@@ -849,10 +900,20 @@ function dodajNovKosMesa(){
   prikaziCenikVNastavitvah(); toast(`Kos "${ime}" dodan.`);
 }
 
+// iOS prilagojen izvoz JSON
 function exportPodatki(){
-  const blob = new Blob([JSON.stringify({cenik, racuni:shranjeniRacuni, stranke},null,2)], {type:'application/json'});
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-  a.download = `obracun-mesa-backup.json`; a.click();
+  const dataStr = JSON.stringify({cenik, racuni:shranjeniRacuni, stranke}, null, 2);
+  const blob = new Blob([dataStr], {type:'application/json'});
+  
+  if (navigator.share && /iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+    const file = new File([blob], "obracun-mesa-backup.json", {type: "application/json"});
+    navigator.share({ files: [file] }).catch(() => {});
+  } else {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `obracun-mesa-backup.json`;
+    a.click();
+  }
 }
 
 function importPodatki(e){
@@ -884,21 +945,54 @@ function oblikujRacunVTxt(r){
   return txt;
 }
 
+// iOS varno kopiranje v odložišče
 function kopirajRacunTxt(id){
   const r = shranjeniRacuni.find(x=>x.id===id); if(!r) return;
-  navigator.clipboard.writeText(oblikujRacunVTxt(r)); toast('Kopirano v odložišče!');
+  const besedilo = oblikujRacunVTxt(r);
+
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(besedilo).then(() => {
+      toast('Kopirano v odložišče!');
+    }).catch(() => fallbackKopiranje(besedilo));
+  } else {
+    fallbackKopiranje(besedilo);
+  }
 }
 
+function fallbackKopiranje(besedilo) {
+  const textArea = document.createElement("textarea");
+  textArea.value = besedilo;
+  textArea.style.position = "fixed";
+  textArea.style.left = "-999999px";
+  document.body.appendChild(textArea);
+  textArea.focus();
+  textArea.select();
+  try {
+    document.execCommand('copy');
+    toast('Kopirano v odložišče!');
+  } catch (err) {
+    toast('Kopiranje ni uspelo.', 'danger');
+  }
+  document.body.removeChild(textArea);
+}
+
+// iOS varen izvoz TXT datoteke
 function izvoziVseRacuneTxt(){
   if(shranjeniRacuni.length===0){ toast('Ni računov za izvoz.','danger'); return; }
   let txt = `OBRAČUN MESA - IZVOZ RAČUNOV\n\n`;
   shranjeniRacuni.forEach(r => { txt += oblikujRacunVTxt(r) + `\n\n`; });
   
   const blob = new Blob(['\uFEFF' + txt], {type: 'text/plain;charset=utf-8'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `vsi_racuni_mesa.txt`;
-  a.click();
+
+  if (navigator.share && /iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+    const file = new File([blob], "vsi_racuni_mesa.txt", {type: "text/plain"});
+    navigator.share({ files: [file] }).catch(() => {});
+  } else {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `vsi_racuni_mesa.txt`;
+    a.click();
+  }
 }
 
 function odpriStatistiko(){ osveziFiltreDatumov(); izracunajInPrikaziStatistiko(); document.getElementById('modalStatistika').classList.remove('hidden'); document.getElementById('modalStatistika').classList.add('flex'); }
