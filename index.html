@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Obračun Mesa">
 
-<!-- Favicon z emojijem 🥩 (prilagojen viewBox in font-size za popravljeno centriranje) -->
+<!-- Favicon z emojijem 🥩 -->
 <link id="favicon" rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text x='50%' y='55%' dominant-baseline='central' text-anchor='middle' font-size='75'>🥩</text></svg>">
 <link id="appleIcon" rel="apple-touch-icon" href="">
 
@@ -45,6 +45,18 @@ input[type=number] { -moz-appearance: textfield; }
 .toast-danger{background:#7f1d1d;color:#fecaca;border-color:#dc2626}
 .toast-info{background:#1e3a8a;color:#bfdbfe;border-color:#2563eb}
 @keyframes toastIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* Animacija za gumb med poslušanjem */
+@keyframes pulseMic {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+  70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+.mic-active {
+  animation: pulseMic 1.5s infinite;
+  background-color: #ef4444 !important;
+  color: #ffffff !important;
+}
 </style>
 </head>
 <body class="bg-zinc-950 text-zinc-100 min-h-screen p-3 md:p-6 flex flex-col items-center">
@@ -113,9 +125,16 @@ input[type=number] { -moz-appearance: textfield; }
 
       <!-- VNOS POSTAVKE -->
       <div class="bg-zinc-900/60 border border-zinc-800 p-3.5 rounded-xl space-y-3">
-        <div class="text-xs font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
-          <span>🥩</span> Dodaj kos mesa
+        <div class="flex items-center justify-between">
+          <div class="text-xs font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
+            <span>🥩</span> Dodaj kos mesa
+          </div>
+          <!-- GUMB ZA GLASOVNI VNOS -->
+          <button id="micBtn" onclick="poslusajGlasovno()" title="Glasovni vnos kosa in teže" class="px-2.5 py-1 text-xs font-bold rounded-lg bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-red-400 flex items-center gap-1.5 transition-colors">
+            🎙️ <span id="micText">Govori</span>
+          </button>
         </div>
+
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="label">Del mesa</label>
@@ -123,7 +142,7 @@ input[type=number] { -moz-appearance: textfield; }
           </div>
           <div>
             <label class="label">Teža [kg]</label>
-            <input type="number" id="teza" step="0.01" min="0" placeholder="0.00" class="input" onkeypress="allowComma(event)">
+            <input type="text" inputmode="decimal" id="teza" placeholder="0,00 ali 0.00" class="input" oninput="popraviInputLočilo(this)" onkeypress="allowComma(event)">
           </div>
         </div>
         <div class="flex items-center justify-between pt-1">
@@ -192,7 +211,7 @@ input[type=number] { -moz-appearance: textfield; }
       <div class="text-xs font-bold text-zinc-400 flex items-center gap-1"><span>🥩</span> Dodaj nov kos</div>
       <div class="grid grid-cols-2 gap-2">
         <input type="text" id="novKosIme" placeholder="Naziv kosa" class="input text-xs py-1.5">
-        <input type="number" id="novKosCena" step="0.1" placeholder="€/kg" class="input text-xs py-1.5" onkeypress="allowComma(event)">
+        <input type="text" inputmode="decimal" id="novKosCena" placeholder="€/kg" class="input text-xs py-1.5" oninput="popraviInputLočilo(this)" onkeypress="allowComma(event)">
       </div>
       <button onclick="dodajNovKosMesa()" class="w-full py-1.5 text-xs font-bold bg-red-600 hover:bg-red-500 rounded-lg text-white">Dodaj na cenik</button>
     </div>
@@ -293,12 +312,9 @@ function generirajSistemskeIkone() {
   canvas.height = 512;
   const ctx = canvas.getContext('2d');
 
-  // Ozadje ikone
   ctx.fillStyle = '#09090b';
   ctx.fillRect(0, 0, 512, 512);
 
-  // Risanje 🥩 emojija na natančno sredino z dodanim varnim robom (safe-area),
-  // da operacijski sistemi pri izrezovanju okroglih ali zaobljenih ikon ne odrežejo robov.
   ctx.font = '260px sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
@@ -386,6 +402,7 @@ window.addEventListener('appinstalled', () => {
   toast('Aplikacija je nameščena na telefon!');
 });
 
+// Podpora za vejico in piko
 function allowComma(e) {
   if (e.key === ',') {
     e.preventDefault();
@@ -395,6 +412,127 @@ function allowComma(e) {
     input.value = input.value.substring(0, start) + '.' + input.value.substring(end);
     input.selectionStart = input.selectionEnd = start + 1;
     input.dispatchEvent(new Event('input'));
+  }
+}
+
+function popraviInputLočilo(input) {
+  // Sprotno pretvarjanje vejice v piko
+  if (input.value.includes(',')) {
+    const pos = input.selectionStart;
+    input.value = input.value.replace(',', '.');
+    try { input.setSelectionRange(pos, pos); } catch(e){}
+  }
+}
+
+function pretvoriSTezo(vnos) {
+  if(!vnos) return NaN;
+  let s = String(vnos).trim().replace(',', '.');
+  return parseFloat(s);
+}
+
+// GLASOVNA PREPOZNAVA
+let recognition = null;
+function poslusajGlasovno() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    toast('Vaš brskalnik ne podpira glasovnega vnosa.', 'danger');
+    return;
+  }
+
+  const micBtn = document.getElementById('micBtn');
+  const micText = document.getElementById('micText');
+
+  if (recognition && recognition.isListening) {
+    recognition.stop();
+    return;
+  }
+
+  recognition = new SpeechRecognition();
+  recognition.lang = 'sl-SI';
+  recognition.continuous = false;
+  recognition.interimResults = false;
+
+  recognition.onstart = () => {
+    recognition.isListening = true;
+    micBtn.classList.add('mic-active');
+    micText.textContent = 'Poslušam...';
+    toast('Govorite (npr. "Stegno 12,5")', 'info');
+  };
+
+  recognition.onend = () => {
+    recognition.isListening = false;
+    micBtn.classList.remove('mic-active');
+    micText.textContent = 'Govori';
+  };
+
+  recognition.onerror = (event) => {
+    recognition.isListening = false;
+    micBtn.classList.remove('mic-active');
+    micText.textContent = 'Govori';
+    toast('Napaka pri prepoznavi glasu.', 'danger');
+  };
+
+  recognition.onresult = (event) => {
+    const besedilo = event.results[0][0].transcript.toLowerCase();
+    toast(`Prepoznano: "${besedilo}"`, 'info');
+    obdelajGlasovniVnos(besedilo);
+  };
+
+  recognition.start();
+}
+
+function obdelajGlasovniVnos(besedilo) {
+  // 1. Poišči najbolj ustrezen kos mesa iz cenika
+  const kosi = Object.keys(cenik);
+  let najdenKos = null;
+
+  for (let kos of kosi) {
+    if (besedilo.includes(kos.toLowerCase())) {
+      najdenKos = kos;
+      break;
+    }
+  }
+
+  // Če ni neposrednega ujemanja, preveri delna imena
+  if (!najdenKos) {
+    for (let kos of kosi) {
+      const besede = kos.toLowerCase().split(' ');
+      if (besede.some(b => b.length > 2 && besedilo.includes(b))) {
+        najdenKos = kos;
+        break;
+      }
+    }
+  }
+
+  if (najdenKos) {
+    document.getElementById('kosMesa').value = najdenKos;
+    posodobiCenoPrikaz();
+  }
+
+  // 2. Izlušči številko teže iz besedila
+  // Zamenjaj besedne zapise številk / ločil v standardne
+  let tekstStevila = besedilo
+    .replace(/vejica|pika|celih|zareza/g, '.')
+    .replace(/kilo|kilogramov|kilograma|kilograme|kg/g, '');
+
+  // Iskanje vzorca številke (npr. 12.5 ali 12 ali 0.5)
+  const stevilkaMatch = tekstStevila.match(/\d+([\.\,]\d+)?/);
+  if (stevilkaMatch) {
+    let tezaVal = stevilkaMatch[0].replace(',', '.');
+    document.getElementById('teza').value = tezaVal;
+    
+    if (najdenKos) {
+      dodajPostavko();
+      toast(`Dodano: ${najdenKos} - ${tezaVal} kg`);
+    } else {
+      toast(`Prepoznana teža ${tezaVal} kg. Izberite še kos mesa.`, 'info');
+    }
+  } else {
+    if (najdenKos) {
+      toast(`Izbran kos ${najdenKos}. Vnesite še težo.`, 'info');
+    } else {
+      toast('Nisem razločil kosa mesa ali teže. Poskusite ponovno.', 'danger');
+    }
   }
 }
 
@@ -539,7 +677,7 @@ function posodobiCenoPrikaz(){
 
 function dodajPostavko(){
   const kos = document.getElementById('kosMesa').value;
-  const teza = parseFloat(document.getElementById('teza').value.replace(',', '.'));
+  const teza = pretvoriSTezo(document.getElementById('teza').value);
   if(!kos){ toast('Izberite kos mesa.','danger'); return; }
   if(isNaN(teza)||teza<=0){ toast('Vnesite veljavno težo.','danger'); return; }
   const cenaNaKg = cenik[kos]; const skupnaCena = teza*cenaNaKg;
@@ -690,7 +828,7 @@ function prikaziCenikVNastavitvah(){
     div.className="flex items-center justify-between p-2 rounded-lg bg-zinc-900 border border-zinc-800 text-xs";
     div.innerHTML = `<span class="font-medium text-zinc-200">🥩 ${kos}</span>
       <div class="flex items-center gap-1">
-        <input type="number" step="0.1" value="${cenik[kos]}" onchange="posodobiCenoMesa('${kos}', this.value)" class="input w-16 py-1 text-right text-xs mono" onkeypress="allowComma(event)">
+        <input type="text" inputmode="decimal" value="${cenik[kos]}" onchange="posodobiCenoMesa('${kos}', this.value)" class="input w-16 py-1 text-right text-xs mono" oninput="popraviInputLočilo(this)" onkeypress="allowComma(event)">
         <span class="text-zinc-500">€/kg</span>
         <button onclick="izbrisiKosMesa('${kos}')" class="text-red-400 font-bold ml-1">✕</button>
       </div>`;
@@ -699,7 +837,7 @@ function prikaziCenikVNastavitvah(){
 }
 
 function posodobiCenoMesa(kos, novaCena){
-  const val=parseFloat(novaCena.replace(',', '.'));
+  const val=pretvoriSTezo(novaCena);
   if(!isNaN(val)&&val>=0){ cenik[kos]=val; shraniCenikVShrambo(); toast(`Cena za "${kos}" posodobljena.`,'info'); }
 }
 
@@ -709,7 +847,7 @@ function izbrisiKosMesa(kos){
 
 function dodajNovKosMesa(){
   const ime=document.getElementById('novKosIme').value.trim();
-  const cena=parseFloat(document.getElementById('novKosCena').value.replace(',', '.'));
+  const cena=pretvoriSTezo(document.getElementById('novKosCena').value);
   if(!ime || isNaN(cena)){ toast('Vnesite pravilno ime in ceno.','danger'); return; }
   cenik[ime]=cena; shraniCenikVShrambo();
   document.getElementById('novKosIme').value=''; document.getElementById('novKosCena').value='';
