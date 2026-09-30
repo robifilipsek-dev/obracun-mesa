@@ -66,8 +66,8 @@ input[type=number] { -moz-appearance: textfield; }
 <div class="max-w-4xl w-full space-y-6">
 
   <!-- HEADER -->
-  <div class="card p-5 flex flex-wrap items-center justify-between gap-4">
-    <div class="flex items-center gap-3">
+  <div class="card p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+    <div class="flex items-center gap-3 w-full sm:w-auto justify-center sm:justify-start">
       <div class="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-2xl select-none">
         🥩
       </div>
@@ -77,21 +77,19 @@ input[type=number] { -moz-appearance: textfield; }
       </div>
     </div>
 
-    <div class="flex items-center gap-2">
-      <button id="installAppBtn" onclick="installPWA()" title="Namesti aplikacijo" class="hidden px-3 py-2 text-xs font-bold rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-red-400 flex items-center gap-2 transition-colors">
+    <!-- Navigacijski gumbi: na mobilnih napravah v 2 vrsticah (grid), na večjih v flex vrstici -->
+    <div class="grid grid-cols-2 sm:flex sm:flex-wrap items-center justify-center gap-2 w-full sm:w-auto">
+      <button id="installAppBtn" onclick="installPWA()" title="Namesti aplikacijo" class="hidden col-span-2 sm:col-span-1 px-3 py-2 text-xs font-bold rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-red-400 flex items-center justify-center gap-2 transition-colors">
         📥 Namesti
       </button>
-      <button onclick="odpriStranke()" class="px-3 py-2 text-xs font-bold rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 transition-colors">
+      <button onclick="odpriStranke()" class="px-3 py-2 text-xs font-bold rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 transition-colors text-center">
         👥 Stranke
       </button>
-      <button onclick="odpriNastavitve()" class="px-3 py-2 text-xs font-bold rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 transition-colors">
-        ⚙️ Nastavitve
-      </button>
-      <button onclick="odpriCeneGovedine()" class="px-3 py-2 text-xs font-bold rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 transition-colors">
-        🐄 Cene govedine
-      </button>
-      <button onclick="odpriStatistiko()" class="px-3 py-2 text-xs font-bold rounded-xl bg-red-600/20 border border-red-500/30 text-red-400 hover:bg-red-600/30 transition-colors">
+      <button onclick="odpriStatistiko()" class="px-3 py-2 text-xs font-bold rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 transition-colors text-center">
         📊 Statistika
+      </button>
+      <button onclick="odpriNastavitve()" class="col-span-2 sm:col-span-1 px-3 py-2 text-xs font-bold rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 transition-colors text-center">
+        ⚙️ Nastavitve
       </button>
     </div>
   </div>
@@ -204,11 +202,20 @@ input[type=number] { -moz-appearance: textfield; }
 <div id="modalNastavitve" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
   <div class="card max-w-md w-full p-5 space-y-4 max-h-[92vh] overflow-y-auto">
     <div class="flex justify-between items-center border-b border-zinc-800 pb-2">
-      <h3 class="text-base font-bold flex items-center gap-1.5">⚙️️ Urejanje cenika</h3>
+      <h3 class="text-base font-bold flex items-center gap-1.5">⚙ Nastavitve</h3>
       <button onclick="zapriNastavitve()" class="text-zinc-400 hover:text-white">✕</button>
     </div>
+
+    <!-- PRESTAVLJEN GUMB ZA CENE GOVEDINE -->
     <div class="bg-zinc-900/50 p-3 rounded-xl border border-zinc-800 space-y-2">
-      <div class="text-xs font-bold text-zinc-400 flex items-center gap-1"><span>🥩</span> Dodaj nov kos</div>
+      <div class="text-xs font-bold text-zinc-400 flex items-center gap-1"><span>🐄</span> Tržne cene</div>
+      <button onclick="odpriCeneGovedineIZNastavitev()" class="w-full py-2 text-xs font-bold rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-200 transition-colors flex items-center justify-center gap-2">
+        🐄 Cene govedine v Sloveniji
+      </button>
+    </div>
+
+    <div class="bg-zinc-900/50 p-3 rounded-xl border border-zinc-800 space-y-2">
+      <div class="text-xs font-bold text-zinc-400 flex items-center gap-1"><span>🥩</span> Urejanje cenika — Dodaj nov kos</div>
       <div class="grid grid-cols-2 gap-2">
         <input type="text" id="novKosIme" placeholder="Naziv kosa" class="input text-xs py-1.5">
         <input type="text" inputmode="decimal" id="novKosCena" placeholder="€/kg" class="input text-xs py-1.5" oninput="popraviInputLočilo(this)" onkeypress="allowComma(event)">
@@ -607,6 +614,10 @@ function prikaziCeneGovedine(){
 function odpriCeneGovedine(){
   prikaziCeneGovedine();
   const m=document.getElementById('modalCene'); m.classList.remove('hidden'); m.classList.add('flex');
+}
+function odpriCeneGovedineIZNastavitev(){
+  zapriNastavitve();
+  odpriCeneGovedine();
 }
 function ponastaviCeneGovedine(){
   ceneAI=null; localStorage.removeItem('mesnica_cene_ai'); prikaziCeneGovedine(); toast('Prikazani so ročni podatki.','info');
