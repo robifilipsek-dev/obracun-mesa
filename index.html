@@ -491,6 +491,169 @@ function pretvoriSTezo(vnos) {
   return parseFloat(s);
 }
 
+// ===== IZBIRA NAČINA: Android = Govori (SpeechRecognition), iOS = snemalnik + Gemini =====
+function poslusajGlasovno() {
+  const env = glasOkolje();
+  const imaSR = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+  if (env.isIOS || !imaSR) { snemajGlasovno(); }
+  else { poslusajGlasovnoSR(); }
+}
+
+// ===== SNEMALNIK + GEMINI (za iOS) =====
+let snemalnik = null, snemalniTokovi = null, snemalniDeli = [], snemalniTimer = null, snemalnikZaseden = false;
+
+function micStanje(besedilo, aktiven) {
+  const micBtn = document.getElementById('micBtn');
+  document.getElementById('micText').textContent = besedilo;
+  micBtn.classList.toggle('mic-active', !!aktiven);
+}
+
+async function snemajGlasovno() {
+  if (snemalnikZaseden) return;
+
+  // drugi tap med snemanjem = konec snemanja
+  if (snemalnik && snemalnik.state === 'recording') { snemalnik.stop(); return; }
+
+  const key = (localStorage.getItem('mesnica_gemini_key') || '').trim();
+  if (!key) {
+    toast('Za glasovni vnos na iPhonu vnesi Gemini API ključ v ⚙️ Nastavitve.', 'danger', 6000);
+    prikaziGlasFallback(true, false);
+    return;
+  }
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || typeof MediaRecorder === 'undefined') {
+    toast('Ta brskalnik ne podpira snemanja zvoka. Uporabi 🎤 na tipkovnici.', 'danger', 6000);
+    prikaziGlasFallback(true, true);
+    return;
+  }
+
+  try {
+    snemalniTokovi = await navigator.mediaDevices.getUserMedia({ audio: true });
+  } catch (e) {
+    const env = glasOkolje();
+    let msg = `[${e.name}] Mikrofon ni dostopen.`;
+    if (!env.secure) msg = `[${e.name}] Stran ni na https (${env.proto}). Mikrofon dela samo prek https.`;
+    else if (e.name === 'NotAllowedError') msg = '[NotAllowedError] Dostop do mikrofona zavrnjen. Safari: aA → Nastavitve spletnega mesta → Mikrofon → Dovoli.';
+    else if (e.name === 'NotFoundError') msg = '[NotFoundError] Mikrofon ni najden.';
+    else if (e.name === 'NotReadableError') msg = '[NotReadableError] Mikrofon uporablja druga aplikacija.';
+    toast(msg, 'danger', 8000);
+    prikaziGlasFallback(true, false);
+    return;
+  }
+
+  // iOS Safari: audio/mp4; drugje webm
+  const kandidati = ['audio/mp4', 'audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus'];
+  const mime = kandidati.find(m => MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(m)) || '';
+
+  try {
+    snemalniDeli = [];
+    snemalnik = mime ? new MediaRecorder(snemalniTokovi, { mimeType: mime }) : new MediaRecorder(snemalniTokovi);
+  } catch (e) {
+    snemalniTokovi.getTracks().forEach(t => t.stop());
+    toast('Snemalnika ni mogoče zagnati: ' + e.name, 'danger', 6000);
+    prikaziGlasFallback(true, false);
+    return;
+  }
+
+  snemalnik.ondataavailable = (ev) => { if (ev.data && ev.data.size) snemalniDeli.push(ev.data); };
+  snemalnik.onstop = async () => {
+    clearTimeout(snemalniTimer);
+    snemalniTokovi.getTracks().forEach(t => t.stop());
+    const tip = (snemalnik.mimeType || mime || 'audio/mp4');
+    const blob = new Blob(snemalniDeli, { type: tip });
+    if (blob.size < 1500) {
+      micStanje('Govori', false);
+      toast('Posnetek je prekratek. Tapni in govori vsaj sekundo.', 'danger', 5000);
+      return;
+    }
+    await posljiPosnetekGemini(blob, key);
+  };
+
+  snemalnik.start();
+  micStanje('Snemam... (tapni za konec)', true);
+  toast('Govori (npr. "Stegno 12,5") in ponovno tapni za konec', 'info', 4000);
+  snemalniTimer = setTimeout(() => { if (snemalnik && snemalnik.state === 'recording') snemalnik.stop(); }, 10000);
+}
+
+function blobVBase64(blob) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(String(r.result).split(',')[1]);
+    r.onerror = () => rej(new Error('Branje posnetka ni uspelo'));
+    r.readAsDataURL(blob);
+  });
+}
+
+async function posljiPosnetekGemini(blob, key) {
+  snemalnikZaseden = true;
+  micStanje('Obdelujem...', false);
+  try {
+    const b64 = await blobVBase64(blob);
+    const mimeZaApi = (blob.type || 'audio/mp4').split(';')[0];
+    const imena = Object.keys(cenik).join('; ');
+    const prompt = `Uporabnik v slovenščini izgovori kos govejega mesa in težo v kg (npr. "stegno dvanajst cela pet", "ribji kotlet 3,2 kilograma"). ` +
+      `Dovoljeni kosi: ${imena}. ` +
+      `Vrni SAMO JSON brez markdown ograj v obliki {"transkript":"...","kos":"natanko ime s seznama ali null","teza":število s piko ali null}. ` +
+      `Številke zapiši kot številko (dvanajst cela pet = 12.5). Če kosa ali teže ne slišiš ali ne prepoznaš, vpiši null. Ničesar ne izmišljaj.`;
+
+    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
+      body: JSON.stringify({
+        contents: [{ parts: [{ inline_data: { mime_type: mimeZaApi, data: b64 } }, { text: prompt }] }],
+        generationConfig: { responseMimeType: 'application/json', temperature: 0 }
+      })
+    });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error((data.error && data.error.message) || ('HTTP ' + r.status));
+
+    const cand = (data.candidates || [])[0] || {};
+    const text = ((cand.content && cand.content.parts) || []).map(p => p.text || '').join('');
+    const m = text.match(/\{[\s\S]*\}/);
+    if (!m) throw new Error('Nepričakovan odgovor modela.');
+    const o = JSON.parse(m[0]);
+
+    if (o.transkript) toast(`Prepoznano: "${String(o.transkript).toLowerCase()}"`, 'info');
+    uporabiGlasovniRezultat(o.kos, o.teza);
+  } catch (e) {
+    console.warn('Gemini glas napaka:', e);
+    toast('Napaka pri obdelavi glasu: ' + e.message, 'danger', 8000);
+  } finally {
+    snemalnikZaseden = false;
+    micStanje('Govori', false);
+  }
+}
+
+function uporabiGlasovniRezultat(kos, teza) {
+  let najdenKos = null;
+  if (kos && Object.prototype.hasOwnProperty.call(cenik, kos)) {
+    najdenKos = kos;
+  } else if (kos) {
+    najdenKos = Object.keys(cenik).find(k => k.toLowerCase() === String(kos).toLowerCase()) || null;
+  }
+  let tezaVal = null;
+  if (teza !== null && teza !== undefined && teza !== '') {
+    const n = parseFloat(String(teza).replace(',', '.'));
+    if (!isNaN(n) && n > 0) tezaVal = String(n);
+  }
+
+  if (najdenKos) {
+    document.getElementById('kosMesa').value = najdenKos;
+    posodobiCenoPrikaz();
+  }
+  if (tezaVal) document.getElementById('teza').value = tezaVal;
+
+  if (najdenKos && tezaVal) {
+    dodajPostavko();
+    toast(`Dodano: ${najdenKos} - ${tezaVal} kg`);
+  } else if (tezaVal) {
+    toast(`Prepoznana teža ${tezaVal} kg. Izberite še kos mesa.`, 'info');
+  } else if (najdenKos) {
+    toast(`Izbran kos ${najdenKos}. Vnesite še težo.`, 'info');
+  } else {
+    toast('Nisem razločil kosa mesa ali teže.', 'danger');
+  }
+}
+
 // GLASOVNA PREPOZNAVA (Android Chrome + iOS Safari) z izpisom prave napake
 const GLAS_JEZIK = 'sl-SI';
 let recognition = null;
@@ -547,7 +710,7 @@ function glasSporocilo(koda) {
   }
 }
 
-function poslusajGlasovno() {
+function poslusajGlasovnoSR() {
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   const micBtn = document.getElementById('micBtn');
   const micText = document.getElementById('micText');
