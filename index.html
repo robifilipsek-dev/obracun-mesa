@@ -4,13 +4,26 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Obračun mesa</title>
+<meta name="theme-color" content="#0a0a0b">
+<script>
+/* Tema: nastavi se še pred izrisom, da ne utripa */
+function jeTemno(t){ return t==='dark' || (t==='auto' && window.matchMedia('(prefers-color-scheme: dark)').matches); }
+function uveljaviTemo(t){
+  var d = jeTemno(t);
+  document.documentElement.classList.toggle('dark', d);
+  var m = document.querySelector('meta[name="theme-color"]'); if(m) m.setAttribute('content', d ? '#0a0a0b' : '#f6f6f4');
+  var sb = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]'); if(sb) sb.setAttribute('content', d ? 'black-translucent' : 'default');
+}
+(function(){ var t='dark'; try{ t=localStorage.getItem('mesnica_tema')||'dark'; }catch(e){} uveljaviTemo(t); })();
+</script>
+
 
 <!-- Apple iOS podpora za namestitev kot aplikacija (PWA) -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Obračun mesa">
 
-<!-- Favicon z emojijem 🥩 -->
+<!-- Favicon z emojijem -->
 <link id="favicon" rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text x='50%' y='55%' dominant-baseline='central' text-anchor='middle' font-size='75'>🥩</text></svg>">
 <link id="appleIcon" rel="apple-touch-icon" href="">
 
@@ -19,95 +32,123 @@
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
-tailwind.config={darkMode:'class',theme:{extend:{colors:{brand:{red:'#ef4444',darkRed:'#b91c1c',amber:'#f59e0b',emerald:'#10b981',zinc:'#27272a'}}}}}
+tailwind.config={darkMode:'class',theme:{extend:{colors:{
+  bg:'rgb(var(--c-bg) / <alpha-value>)', surface:'rgb(var(--c-surface) / <alpha-value>)', sub:'rgb(var(--c-sub) / <alpha-value>)',
+  chip:'rgb(var(--c-chip) / <alpha-value>)', chip2:'rgb(var(--c-chip2) / <alpha-value>)',
+  line:'rgb(var(--c-line) / <alpha-value>)', line2:'rgb(var(--c-line2) / <alpha-value>)',
+  ink:'rgb(var(--c-ink) / <alpha-value>)', ink2:'rgb(var(--c-ink2) / <alpha-value>)', mute:'rgb(var(--c-mute) / <alpha-value>)', faint:'rgb(var(--c-faint) / <alpha-value>)',
+  accent:'rgb(var(--c-accent) / <alpha-value>)', accent2:'rgb(var(--c-accent2) / <alpha-value>)',
+  link:'rgb(var(--c-link) / <alpha-value>)', warn:'rgb(var(--c-warn) / <alpha-value>)'
+}}}}
 </script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
-/* iOS Prilagoditve */
-body {
-  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-  letter-spacing: -.011em;
-  padding-top: max(0.75rem, env(safe-area-inset-top));
-  padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
-  padding-left: max(0.75rem, env(safe-area-inset-left));
-  padding-right: max(0.75rem, env(safe-area-inset-right));
-  -webkit-tap-highlight-color: transparent;
+:root{
+  color-scheme: light;
+  --c-bg:246 246 244; --c-surface:255 255 255; --c-sub:249 249 247;
+  --c-chip:240 240 237; --c-chip2:229 229 225; --c-line:233 233 229; --c-line2:218 218 212;
+  --c-ink:24 24 27; --c-ink2:63 63 70; --c-mute:113 113 122; --c-faint:161 161 170;
+  --c-accent:220 38 38; --c-accent2:185 28 28; --c-link:37 99 235; --c-warn:202 138 4;
+  --shadow: 0 1px 2px rgba(0,0,0,.04), 0 16px 36px -20px rgba(0,0,0,.12);
+  --t-ok-bg:#ecfdf5; --t-ok-fg:#065f46; --t-ok-bd:#a7f3d0;
+  --t-er-bg:#fef2f2; --t-er-fg:#991b1b; --t-er-bd:#fecaca;
+  --t-in-bg:#eff6ff; --t-in-fg:#1e40af; --t-in-bd:#bfdbfe;
+}
+.dark{
+  color-scheme: dark;
+  --c-bg:10 10 11; --c-surface:21 21 23; --c-sub:27 27 30;
+  --c-chip:35 35 39; --c-chip2:48 48 53; --c-line:38 38 42; --c-line2:58 58 64;
+  --c-ink:250 250 250; --c-ink2:212 212 216; --c-mute:161 161 170; --c-faint:113 113 122;
+  --c-accent:239 68 68; --c-accent2:248 113 113; --c-link:96 165 250; --c-warn:251 191 36;
+  --shadow: 0 0 0 1px rgba(255,255,255,.02) inset, 0 24px 48px -28px rgba(0,0,0,.8);
+  --t-ok-bg:#052e22; --t-ok-fg:#a7f3d0; --t-ok-bd:#047857;
+  --t-er-bg:#3b1010; --t-er-fg:#fecaca; --t-er-bd:#b91c1c;
+  --t-in-bg:#14213d; --t-in-fg:#bfdbfe; --t-in-bd:#1d4ed8;
 }
 
-.mono { font-family: 'JetBrains Mono', monospace; }
-.card { background: rgba(24,24,27,.94); border: 1px solid #3f3f46; border-radius: 16px; box-shadow: 0 12px 30px rgba(0,0,0,.18); }
+html{ background: rgb(var(--c-bg)); }
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  background: rgb(var(--c-bg));
+  color: rgb(var(--c-ink));
+  letter-spacing: -.011em;
+  -webkit-font-smoothing: antialiased;
+  padding-top: max(1rem, env(safe-area-inset-top));
+  padding-bottom: max(2rem, env(safe-area-inset-bottom));
+  padding-left: max(1rem, env(safe-area-inset-left));
+  padding-right: max(1rem, env(safe-area-inset-right));
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color .25s, color .25s;
+}
 
-/* Preventivno preprečevanje iOS Safari Zoom-a ob kliku na vnosno polje (font-size mora biti vsaj 16px na mobilcih) */
+/* Številke: jasne, enakomerne širine, brez prečrtane/pikaste ničle */
+.mono, .result {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1, "zero" 0, "ss01" 0;
+  letter-spacing: -.02em;
+  font-weight: 600;
+}
+td.mono { font-size: 14px; }
+.result { letter-spacing: -.035em; font-weight: 600; }
+
+.card { background: rgb(var(--c-surface)); border: 1px solid rgb(var(--c-line)); border-radius: 22px; box-shadow: var(--shadow); }
+
 .input {
-  background: #09090b;
-  border: 1px solid #3f3f46;
-  color: #fafafa;
-  border-radius: 10px;
-  padding: .75rem 1rem;
-  font-size: 16px; /* 16px za preprečitev zooms na iOS */
+  background-color: rgb(var(--c-bg));
+  border: 1px solid rgb(var(--c-line));
+  color: rgb(var(--c-ink));
+  border-radius: 12px;
+  padding: .7rem .95rem;
+  font-size: 16px; /* 16px preprečuje zoom na iOS */
   width: 100%;
   outline: none;
-  transition: all 0.2s;
-  -webkit-appearance: none;
+  transition: border-color .15s, box-shadow .15s, background-color .25s;
+  -webkit-appearance: none; appearance: none;
 }
-@media (min-width: 640px) {
-  .input { font-size: 0.9rem; }
+.input::placeholder { color: rgb(var(--c-faint)); }
+@media (min-width: 640px) { .input { font-size: 0.9rem; } }
+.input:focus { border-color: rgb(var(--c-ink) / .45); box-shadow: 0 0 0 4px rgb(var(--c-ink) / .07); }
+select.input {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none' stroke='%238a8a93' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1 1.5l5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right .9rem center; padding-right: 2.25rem;
 }
-.input:focus { border-color: #ef4444; box-shadow: 0 0 0 3px rgba(239,68,68,.1); }
 
-input[type=number]::-webkit-inner-spin-button, 
+input[type=number]::-webkit-inner-spin-button,
 input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 input[type=number] { -moz-appearance: textfield; }
 
-.label { display: block; font-size: .75rem; font-weight: 700; color: #d4d4d8; margin-bottom: .4rem; }
-.result { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
+.label { display:block; font-size:.6875rem; font-weight:600; letter-spacing:.04em; text-transform:uppercase; color: rgb(var(--c-mute)); margin-bottom:.4rem; }
 
-/* Smooth scrolling za iOS */
-.overflow-y-auto {
-  -webkit-overflow-scrolling: touch;
-}
+.overflow-y-auto { -webkit-overflow-scrolling: touch; scrollbar-width: thin; scrollbar-color: rgb(var(--c-line2)) transparent; }
+button { touch-action: manipulation; transition: background-color .15s, color .15s, opacity .15s, transform .1s; }
+button:active { transform: scale(.98); }
 
-button {
-  touch-action: manipulation;
-}
+/* Preklopnik teme */
+.seg { display:grid; grid-template-columns: repeat(3,1fr); gap:4px; padding:4px; border-radius:14px; background: rgb(var(--c-chip)); }
+.seg button { padding:.5rem .25rem; font-size:.75rem; font-weight:600; border-radius:10px; color: rgb(var(--c-mute)); }
+.seg button.on { background: rgb(var(--c-surface)); color: rgb(var(--c-ink)); box-shadow: 0 1px 3px rgba(0,0,0,.18); }
 
-#toastWrap {
-  position: fixed;
-  left: 50%;
-  transform: translateX(-50%);
-  bottom: calc(20px + env(safe-area-inset-bottom));
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  z-index: 100;
-  pointer-events: none;
-  width: 90%;
-  max-width: 400px;
-}
-.toast { pointer-events: auto; padding: 10px 16px; border-radius: 12px; font-size: 13px; font-weight: 600; box-shadow: 0 6px 20px rgba(0,0,0,.3); border: 1px solid; animation: toastIn .2s ease-out; text-align: center; }
-.toast-success { background: #064e3b; color: #a7f3d0; border-color: #059669; }
-.toast-danger { background: #7f1d1d; color: #fecaca; border-color: #dc2626; }
-.toast-info { background: #1e3a8a; color: #bfdbfe; border-color: #2563eb; }
-@keyframes toastIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+#toastWrap { position:fixed; left:50%; transform:translateX(-50%); bottom:calc(20px + env(safe-area-inset-bottom)); display:flex; flex-direction:column; gap:8px; z-index:100; pointer-events:none; width:90%; max-width:400px; }
+.toast { pointer-events:auto; padding:11px 16px; border-radius:14px; font-size:13px; font-weight:600; box-shadow:0 10px 30px rgba(0,0,0,.2); border:1px solid; animation: toastIn .2s ease-out; text-align:center; }
+.toast-success { background:var(--t-ok-bg); color:var(--t-ok-fg); border-color:var(--t-ok-bd); }
+.toast-danger { background:var(--t-er-bg); color:var(--t-er-fg); border-color:var(--t-er-bd); }
+.toast-info { background:var(--t-in-bg); color:var(--t-in-fg); border-color:var(--t-in-bd); }
+@keyframes toastIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
 
-/* Animacija za gumb med poslušanjem */
 @keyframes pulseMic {
-  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-  70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
-  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgb(var(--c-accent) / .6); }
+  70% { transform: scale(1.04); box-shadow: 0 0 0 10px rgb(var(--c-accent) / 0); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgb(var(--c-accent) / 0); }
 }
-.mic-active {
-  animation: pulseMic 1.5s infinite;
-  background-color: #ef4444 !important;
-  color: #ffffff !important;
-}
+.mic-active { animation: pulseMic 1.5s infinite; background-color: rgb(var(--c-accent)) !important; color:#fff !important; border-color: transparent !important; }
 </style>
 </head>
-<body class="bg-zinc-950 text-zinc-100 min-h-screen flex flex-col items-center justify-start">
+<body class="bg-bg text-ink min-h-screen flex flex-col items-center justify-start">
 
 <div id="toastWrap"></div>
 
@@ -116,28 +157,28 @@ button {
   <!-- HEADER -->
   <div class="card p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
     <div class="flex items-center gap-3 w-full sm:w-auto justify-center sm:justify-start">
-      <div class="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-2xl select-none">
+      <div class="w-11 h-11 rounded-2xl bg-sub border border-line flex items-center justify-center text-2xl select-none">
         🥩
       </div>
       <div>
-        <h1 class="text-xl font-extrabold tracking-tight flex items-center gap-2">Obračun mesa</h1>
-        <p class="text-xs text-zinc-400">Preračun, cenik in evidenca</p>
+        <h1 class="text-xl font-semibold tracking-tight flex items-center gap-2">Obračun mesa</h1>
+        <p class="text-xs text-mute">Preračun, cenik in evidenca</p>
       </div>
     </div>
 
     <!-- Navigacijski gumbi -->
     <div class="grid grid-cols-2 sm:flex sm:flex-wrap items-center justify-center gap-2 w-full sm:w-auto">
-      <button id="installAppBtn" onclick="installPWA()" title="Namesti aplikacijo" class="hidden col-span-2 sm:col-span-1 px-3 py-2 text-xs font-bold rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-red-400 flex items-center justify-center gap-2 transition-colors">
-        📥 Namesti
+      <button id="installAppBtn" onclick="installPWA()" title="Namesti aplikacijo" class="hidden col-span-2 sm:col-span-1 px-3 py-2 text-xs font-semibold rounded-xl bg-chip hover:bg-chip2 border border-line2 text-accent flex items-center justify-center gap-2 transition-colors">
+        Namesti
       </button>
-      <button onclick="odpriStranke()" class="px-3 py-2 text-xs font-bold rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 transition-colors text-center">
-        👥 Stranke
+      <button onclick="odpriStranke()" class="px-3 py-2 text-xs font-semibold rounded-xl bg-chip hover:bg-chip2 border border-line2 text-ink2 transition-colors text-center">
+        Stranke
       </button>
-      <button onclick="odpriStatistiko()" class="px-3 py-2 text-xs font-bold rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 transition-colors text-center">
-        📊 Statistika
+      <button onclick="odpriStatistiko()" class="px-3 py-2 text-xs font-semibold rounded-xl bg-chip hover:bg-chip2 border border-line2 text-ink2 transition-colors text-center">
+        Statistika
       </button>
-      <button onclick="odpriNastavitve()" class="col-span-2 sm:col-span-1 px-3 py-2 text-xs font-bold rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 transition-colors text-center">
-        ⚙️ Nastavitve
+      <button onclick="odpriNastavitve()" class="col-span-2 sm:col-span-1 px-3 py-2 text-xs font-semibold rounded-xl bg-chip hover:bg-chip2 border border-line2 text-ink2 transition-colors text-center">
+        Nastavitve
       </button>
     </div>
   </div>
@@ -147,9 +188,9 @@ button {
 
     <!-- LEVI STOLPEC: Obrazec -->
     <div class="lg:col-span-6 card p-5 space-y-4">
-      <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
-        <h2 id="naslovObrazca" class="text-base font-bold text-zinc-200">Novi račun</h2>
-        <span id="urejanjeBadge" class="hidden text-[10px] bg-amber-500/20 text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded-full font-bold">Urejanje</span>
+      <div class="flex items-center justify-between border-b border-line pb-3">
+        <h2 id="naslovObrazca" class="text-base font-semibold text-ink">Novi račun</h2>
+        <span id="urejanjeBadge" class="hidden text-[10px] bg-warn/15 text-warn border border-warn/30 px-2 py-0.5 rounded-full font-semibold">Urejanje</span>
       </div>
 
       <div class="grid grid-cols-2 gap-3">
@@ -170,14 +211,14 @@ button {
       </div>
 
       <!-- VNOS POSTAVKE -->
-      <div class="bg-zinc-900/60 border border-zinc-800 p-3.5 rounded-xl space-y-3">
+      <div class="bg-sub border border-line p-3.5 rounded-xl space-y-3">
         <div class="flex items-center justify-between">
-          <div class="text-xs font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
-            <span>🥩</span> Dodaj kos mesa
+          <div class="text-xs font-semibold text-mute uppercase tracking-wider flex items-center gap-1.5">
+            Dodaj kos mesa
           </div>
           <!-- GUMB ZA GLASOVNI VNOS -->
-          <button id="micBtn" onclick="poslusajGlasovno()" title="Glasovni vnos kosa in teže" class="px-2.5 py-1 text-xs font-bold rounded-lg bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-red-400 flex items-center gap-1.5 transition-colors">
-            🎙️ <span id="micText">Govori</span>
+          <button id="micBtn" onclick="poslusajGlasovno()" title="Glasovni vnos kosa in teže" class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-chip hover:bg-chip2 border border-line2 text-accent flex items-center gap-1.5 transition-colors">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg> <span id="micText">Govori</span>
           </button>
         </div>
 
@@ -186,7 +227,7 @@ button {
           <input type="text" id="glasFallbackInput" class="input" autocomplete="off" autocapitalize="off" enterkeyhint="done"
                  placeholder='Npr. "stegno 12,5" (tapni 🎤 na tipkovnici)'
                  onkeydown="if(event.key==='Enter'){potrdiTekstovniVnos();}">
-          <button onclick="potrdiTekstovniVnos()" class="px-3 py-2 text-xs font-bold rounded-lg bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-100">OK</button>
+          <button onclick="potrdiTekstovniVnos()" class="px-3 py-2 text-xs font-semibold rounded-lg bg-chip hover:bg-chip2 border border-line2 text-ink">OK</button>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
@@ -200,8 +241,8 @@ button {
           </div>
         </div>
         <div class="flex items-center justify-between pt-1">
-          <span class="text-xs text-zinc-400">Cena: <strong id="cenaNaKgPrikaz" class="text-zinc-100 mono">0.00 €/kg</strong></span>
-          <button onclick="dodajPostavko()" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-red-600 hover:bg-red-500 text-white transition-colors">
+          <span class="text-xs text-mute">Cena: <strong id="cenaNaKgPrikaz" class="text-ink mono">0.00 €/kg</strong></span>
+          <button onclick="dodajPostavko()" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-accent hover:bg-accent2 text-white transition-colors">
             + Dodaj
           </button>
         </div>
@@ -211,36 +252,36 @@ button {
       <div class="overflow-x-auto min-h-[120px]">
         <table class="w-full text-left text-xs">
           <thead>
-            <tr class="border-b border-zinc-800 text-zinc-500">
-              <th class="py-2">Kos</th>
-              <th class="py-2 text-right">€/kg</th>
-              <th class="py-2 text-right">kg</th>
-              <th class="py-2 text-right">Skupaj</th>
-              <th class="py-2 text-center"></th>
+            <tr class="border-b border-line text-faint">
+              <th class="py-2 font-medium text-[11px] uppercase tracking-wider">Kos</th>
+              <th class="py-2 font-medium text-[11px] uppercase tracking-wider text-right">€/kg</th>
+              <th class="py-2 font-medium text-[11px] uppercase tracking-wider text-right">kg</th>
+              <th class="py-2 font-medium text-[11px] uppercase tracking-wider text-right">Skupaj</th>
+              <th class="py-2 font-medium text-[11px] uppercase tracking-wider text-center"></th>
             </tr>
           </thead>
-          <tbody id="tabelaPostavk" class="divide-y divide-zinc-800/50"></tbody>
+          <tbody id="tabelaPostavk" class="divide-y divide-line"></tbody>
         </table>
       </div>
 
       <!-- ZNESEK ZA PLAČILO -->
-      <div class="border-t border-zinc-800 pt-4 flex items-center justify-between">
+      <div class="border-t border-line pt-4 flex items-center justify-between">
         <div>
-          <div class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Skupaj za plačilo</div>
-          <div id="skupajZaPlacilo" class="text-2xl font-extrabold text-red-500 result">0.00 €</div>
+          <div class="text-[10px] font-semibold text-mute uppercase tracking-wider">Skupaj za plačilo</div>
+          <div id="skupajZaPlacilo" class="text-4xl text-ink result">0.00 €</div>
         </div>
         <div class="flex gap-2">
-          <button id="btnPrekliciUrejanje" onclick="prekliciUrejanje()" class="hidden px-3 py-2 text-xs font-bold rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300">Prekliči</button>
-          <button onclick="shraniRacun()" class="px-4 py-2 text-xs font-bold rounded-xl bg-red-600 hover:bg-red-500 text-white transition-colors">Shrani račun</button>
+          <button id="btnPrekliciUrejanje" onclick="prekliciUrejanje()" class="hidden px-3 py-2 text-xs font-semibold rounded-lg bg-chip hover:bg-chip2 text-ink2">Prekliči</button>
+          <button onclick="shraniRacun()" class="px-4 py-2 text-xs font-semibold rounded-xl bg-accent hover:bg-accent2 text-white transition-colors">Shrani račun</button>
         </div>
       </div>
     </div>
 
     <!-- DESNI STOLPEC: Shranjeni računi -->
     <div class="lg:col-span-6 card p-5 space-y-4">
-      <div class="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-800 pb-3">
-        <h2 class="text-base font-bold text-zinc-200">Shranjeni računi</h2>
-        <button onclick="izvoziVseRacuneTxt()" class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700">Izvozi TXT</button>
+      <div class="flex flex-wrap items-center justify-between gap-2 border-b border-line pb-3">
+        <h2 class="text-base font-semibold text-ink">Shranjeni računi</h2>
+        <button onclick="izvoziVseRacuneTxt()" class="px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-chip hover:bg-chip2 text-ink2 border border-line2">Izvozi TXT</button>
       </div>
 
       <div class="grid grid-cols-2 gap-2">
@@ -255,119 +296,146 @@ button {
 </div>
 
 <!-- MODAL: Nastavitve cenika -->
-<div id="modalNastavitve" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+<div id="modalNastavitve" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
   <div class="card max-w-md w-full p-5 space-y-4 max-h-[92vh] overflow-y-auto">
-    <div class="flex justify-between items-center border-b border-zinc-800 pb-2">
-      <h3 class="text-base font-bold flex items-center gap-1.5">⚙ Nastavitve</h3>
-      <button onclick="zapriNastavitve()" class="text-zinc-400 hover:text-white p-1">✕</button>
+    <div class="flex justify-between items-center border-b border-line pb-2">
+      <h3 class="text-base font-semibold flex items-center gap-1.5">Nastavitve</h3>
+      <button onclick="zapriNastavitve()" class="text-mute hover:text-ink p-1">✕</button>
     </div>
 
-    <div class="bg-zinc-900/50 p-3 rounded-xl border border-zinc-800 space-y-2">
-      <div class="text-xs font-bold text-zinc-400 flex items-center gap-1"><span>🐄</span> Tržne cene</div>
-      <button onclick="odpriCeneGovedineIZNastavitev()" class="w-full py-2 text-xs font-bold rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-200 transition-colors flex items-center justify-center gap-2">
-        🐄 Cene govedine v Sloveniji
+    <div class="bg-sub p-3 rounded-xl border border-line space-y-2">
+      <div class="text-xs font-semibold text-mute">Videz</div>
+      <div class="seg" id="temaSeg">
+        <button data-tema="light" onclick="nastaviTemo('light')">Svetla</button>
+        <button data-tema="dark" onclick="nastaviTemo('dark')">Temna</button>
+        <button data-tema="auto" onclick="nastaviTemo('auto')">Samodejno</button>
+      </div>
+    </div>
+
+    <div class="bg-sub p-3 rounded-xl border border-line space-y-2">
+      <div class="text-xs font-semibold text-mute flex items-center gap-1">Tržne cene</div>
+      <button onclick="odpriCeneGovedineIZNastavitev()" class="w-full py-2 text-xs font-semibold rounded-xl bg-chip hover:bg-chip2 border border-line2 text-ink transition-colors flex items-center justify-center gap-2">
+        Cene govedine v Sloveniji
       </button>
     </div>
 
-    <div class="bg-zinc-900/50 p-3 rounded-xl border border-zinc-800 space-y-2">
-      <div class="text-xs font-bold text-zinc-400 flex items-center gap-1"><span>🥩</span> Urejanje cenika — Dodaj nov kos</div>
+    <div class="bg-sub p-3 rounded-xl border border-line space-y-2">
+      <div class="text-xs font-semibold text-mute flex items-center gap-1">Urejanje cenika — Dodaj nov kos</div>
       <div class="grid grid-cols-2 gap-2">
         <input type="text" id="novKosIme" placeholder="Naziv kosa" class="input text-xs py-1.5">
         <input type="text" inputmode="decimal" id="novKosCena" placeholder="€/kg" class="input text-xs py-1.5" oninput="popraviInputLočilo(this)" onkeypress="allowComma(event)">
       </div>
-      <button onclick="dodajNovKosMesa()" class="w-full py-1.5 text-xs font-bold bg-red-600 hover:bg-red-500 rounded-lg text-white">Dodaj na cenik</button>
+      <button onclick="dodajNovKosMesa()" class="w-full py-1.5 text-xs font-semibold bg-accent hover:bg-accent2 rounded-lg text-white">Dodaj na cenik</button>
     </div>
     <div id="seznamCenika" class="max-h-48 overflow-y-auto space-y-1.5 pr-1"></div>
-    <div class="bg-zinc-900/50 p-3 rounded-xl border border-zinc-800 space-y-2">
-      <div class="text-xs font-bold text-zinc-400">✨ Gemini · samodejne cene govedine</div>
-      <div class="text-[11px] text-zinc-500">Model: <span class="mono text-zinc-300">gemini-3.1-flash-lite</span></div>
+    <div class="bg-sub p-3 rounded-xl border border-line space-y-2">
+      <div class="text-xs font-semibold text-mute">Gemini · samodejne cene govedine</div>
+      <div class="text-[11px] text-faint">Model: <span class="mono text-ink2">gemini-3.1-flash-lite</span></div>
       <input type="password" id="geminiKljuc" placeholder="Prilepi Gemini API ključ" class="input text-xs py-1.5" autocomplete="off" oninput="shraniGeminiKljuc()">
-      <a href="https://aistudio.google.com/api-keys" target="_blank" rel="noopener" class="inline-block text-[11px] font-bold text-cyan-400 hover:text-cyan-300">Pridobi API ključ v Google AI Studio ↗</a>
-      <p class="text-[10px] text-zinc-500">Ključ se shrani samo v tej napravi in ni del izvoza JSON. Cenik zgoraj ostane povsem ročen; AI vpliva samo na okno »Cene govedine«.</p>
+      <a href="https://aistudio.google.com/api-keys" target="_blank" rel="noopener" class="inline-block text-[11px] font-semibold text-link hover:opacity-70">Pridobi API ključ v Google AI Studio ↗</a>
+      <p class="text-[10px] text-faint">Ključ se shrani samo v tej napravi in ni del izvoza JSON. Cenik zgoraj ostane povsem ročen; AI vpliva samo na okno »Cene govedine«.</p>
     </div>
-    <div class="border-t border-zinc-800 pt-3 flex justify-between">
-      <button onclick="exportPodatki()" class="text-xs font-bold text-zinc-400 hover:text-zinc-200">📥 Izvoz JSON</button>
-      <button onclick="document.getElementById('uvozInput').click()" class="text-xs font-bold text-zinc-400 hover:text-zinc-200">📤 Uvoz JSON</button>
+    <div class="border-t border-line pt-3 flex justify-between">
+      <button onclick="exportPodatki()" class="text-xs font-semibold text-mute hover:text-ink">Izvoz JSON</button>
+      <button onclick="document.getElementById('uvozInput').click()" class="text-xs font-semibold text-mute hover:text-ink">Uvoz JSON</button>
       <input type="file" id="uvozInput" accept="application/json" class="hidden" onchange="importPodatki(event)">
     </div>
     <div class="pt-2 text-right">
-      <button onclick="zapriNastavitve()" class="px-4 py-1.5 text-xs font-bold rounded-lg bg-zinc-800 hover:bg-zinc-700">Zapri</button>
+      <button onclick="zapriNastavitve()" class="px-4 py-1.5 text-xs font-semibold rounded-lg bg-chip hover:bg-chip2">Zapri</button>
     </div>
   </div>
 </div>
 
 <!-- MODAL: Statistika -->
-<div id="modalStatistika" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+<div id="modalStatistika" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
   <div class="card max-w-xl w-full p-5 space-y-4">
-    <div class="flex justify-between items-center border-b border-zinc-800 pb-2">
-      <h3 class="text-base font-bold flex items-center gap-1.5">📊 Skupna statistika</h3>
-      <button onclick="zapriStatistiko()" class="text-zinc-400 hover:text-white p-1">✕</button>
+    <div class="flex justify-between items-center border-b border-line pb-2">
+      <h3 class="text-base font-semibold flex items-center gap-1.5">Skupna statistika</h3>
+      <button onclick="zapriStatistiko()" class="text-mute hover:text-ink p-1">✕</button>
     </div>
     <div class="flex items-center gap-3">
-      <label class="text-xs text-zinc-400 font-bold">Datum:</label>
+      <label class="text-xs text-mute font-semibold">Datum:</label>
       <select id="statistikaDatum" onchange="izracunajInPrikaziStatistiko()" class="input text-xs py-1.5 w-auto"><option value="vsi">Vse</option></select>
     </div>
-    <div class="max-h-60 overflow-y-auto border border-zinc-800 rounded-xl">
+    <div class="max-h-60 overflow-y-auto border border-line rounded-xl">
       <table class="w-full text-left text-xs">
-        <thead class="bg-zinc-900 text-zinc-400 border-b border-zinc-800">
+        <thead class="bg-sub text-mute border-b border-line">
           <tr><th class="p-2.5">Kos</th><th class="p-2.5 text-right">Teža (kg)</th><th class="p-2.5 text-right">Vrednost (€)</th></tr>
         </thead>
-        <tbody id="tabelaStatistike" class="divide-y divide-zinc-800/50"></tbody>
+        <tbody id="tabelaStatistike" class="divide-y divide-line"></tbody>
       </table>
     </div>
-    <div class="flex justify-between items-center border-t border-zinc-800 pt-3">
-      <span class="text-xs text-zinc-400">Skupaj teža: <strong id="statSkupnaTeza" class="text-zinc-100 mono">0 kg</strong></span>
-      <span class="text-xs text-zinc-400">Skupaj vrednost: <strong id="statSkupnaVrednost" class="text-red-400 mono">0.00 €</strong></span>
+    <div class="flex justify-between items-center border-t border-line pt-3">
+      <span class="text-xs text-mute">Skupaj teža: <strong id="statSkupnaTeza" class="text-ink mono">0 kg</strong></span>
+      <span class="text-xs text-mute">Skupaj vrednost: <strong id="statSkupnaVrednost" class="text-ink mono">0.00 €</strong></span>
     </div>
     <div class="text-right pt-2">
-      <button onclick="zapriStatistiko()" class="px-4 py-1.5 text-xs font-bold rounded-lg bg-zinc-800 hover:bg-zinc-700">Zapri</button>
+      <button onclick="zapriStatistiko()" class="px-4 py-1.5 text-xs font-semibold rounded-lg bg-chip hover:bg-chip2">Zapri</button>
     </div>
   </div>
 </div>
 
 <!-- MODAL: Stranke -->
-<div id="modalStranke" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+<div id="modalStranke" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
   <div class="card max-w-md w-full p-5 space-y-4">
-    <div class="flex justify-between items-center border-b border-zinc-800 pb-2">
-      <h3 class="text-base font-bold">👥 Stalne stranke</h3>
-      <button onclick="zapriStranke()" class="text-zinc-400 hover:text-white p-1">✕</button>
+    <div class="flex justify-between items-center border-b border-line pb-2">
+      <h3 class="text-base font-semibold">Stalne stranke</h3>
+      <button onclick="zapriStranke()" class="text-mute hover:text-ink p-1">✕</button>
     </div>
     <div class="flex gap-2">
       <input type="text" id="novaStranka" placeholder="Nova stranka" class="input text-xs py-1.5" onkeydown="if(event.key==='Enter')dodajStrankoRocno()">
-      <button onclick="dodajStrankoRocno()" class="px-3 text-xs font-bold bg-red-600 hover:bg-red-500 rounded-lg text-white whitespace-nowrap">+ Dodaj</button>
+      <button onclick="dodajStrankoRocno()" class="px-3 text-xs font-semibold bg-accent hover:bg-accent2 rounded-lg text-white whitespace-nowrap">+ Dodaj</button>
     </div>
-    <p class="text-[11px] text-zinc-500">Stranka se shrani samodejno ob shranjevanju računa. Tapni ime, da ga vneseš v obrazec.</p>
+    <p class="text-[11px] text-faint">Stranka se shrani samodejno ob shranjevanju računa. Tapni ime, da ga vneseš v obrazec.</p>
     <div id="seznamStrank" class="max-h-64 overflow-y-auto space-y-1.5 pr-1"></div>
-    <div class="text-right"><button onclick="zapriStranke()" class="px-4 py-1.5 text-xs font-bold rounded-lg bg-zinc-800 hover:bg-zinc-700">Zapri</button></div>
+    <div class="text-right"><button onclick="zapriStranke()" class="px-4 py-1.5 text-xs font-semibold rounded-lg bg-chip hover:bg-chip2">Zapri</button></div>
   </div>
 </div>
 
 <!-- MODAL: Cene govedine -->
-<div id="modalCene" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+<div id="modalCene" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
   <div class="card max-w-md w-full p-5 space-y-4 max-h-[92vh] overflow-y-auto">
-    <div class="flex justify-between items-center border-b border-zinc-800 pb-2">
-      <h3 class="text-base font-bold">🐄 Cene govejega mesa v Sloveniji</h3>
-      <button onclick="zapriCeneGovedine()" class="text-zinc-400 hover:text-white p-1">✕</button>
+    <div class="flex justify-between items-center border-b border-line pb-2">
+      <h3 class="text-base font-semibold">Cene govejega mesa v Sloveniji</h3>
+      <button onclick="zapriCeneGovedine()" class="text-mute hover:text-ink p-1">✕</button>
     </div>
-    <p class="text-xs text-zinc-400">Cene govejega mesa po delih (€/kg)</p>
+    <p class="text-xs text-mute">Cene govejega mesa po delih (€/kg)</p>
     <div class="flex gap-2">
-      <button id="btnGenerirajCene" onclick="generirajCeneAI()" class="flex-1 py-1.5 text-xs font-bold rounded-lg bg-red-600 hover:bg-red-500 text-white transition-colors">✨ Generiraj oceno z AI</button>
-      <button onclick="ponastaviCeneGovedine()" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300">Ročni podatki</button>
+      <button id="btnGenerirajCene" onclick="generirajCeneAI()" class="flex-1 py-1.5 text-xs font-semibold rounded-lg bg-accent hover:bg-accent2 text-white transition-colors">Generiraj oceno z AI</button>
+      <button onclick="ponastaviCeneGovedine()" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-chip hover:bg-chip2 border border-line2 text-ink2">Ročni podatki</button>
     </div>
-    <div id="statusCeneGovedine" class="text-[11px] text-zinc-500"></div>
-    <div class="border border-zinc-800 rounded-xl overflow-hidden">
+    <div id="statusCeneGovedine" class="text-[11px] text-faint"></div>
+    <div class="border border-line rounded-xl overflow-hidden">
       <table class="w-full text-left text-xs">
-        <thead class="bg-zinc-900 text-zinc-400 border-b border-zinc-800"><tr><th class="p-2.5">Del mesa</th><th class="p-2.5 text-right">€/kg</th></tr></thead>
-        <tbody id="tabelaCeneGovedine" class="divide-y divide-zinc-800/50"></tbody>
+        <thead class="bg-sub text-mute border-b border-line"><tr><th class="p-2.5">Del mesa</th><th class="p-2.5 text-right">€/kg</th></tr></thead>
+        <tbody id="tabelaCeneGovedine" class="divide-y divide-line"></tbody>
       </table>
     </div>
     <div id="viriCeneGovedine" class="text-[11px] space-y-0.5"></div>
-    <p class="text-[11px] text-zinc-500">Okvirne cene, namenjene primerjavi z lastnim cenikom. Ocene AI lahko vsebujejo napake.</p>
-    <div class="text-right"><button onclick="zapriCeneGovedine()" class="px-4 py-1.5 text-xs font-bold rounded-lg bg-zinc-800 hover:bg-zinc-700">Zapri</button></div>
+    <p class="text-[11px] text-faint">Okvirne cene, namenjene primerjavi z lastnim cenikom. Ocene AI lahko vsebujejo napake.</p>
+    <div class="text-right"><button onclick="zapriCeneGovedine()" class="px-4 py-1.5 text-xs font-semibold rounded-lg bg-chip hover:bg-chip2">Zapri</button></div>
   </div>
 </div>
 
 <script>
+// ===== TEMA =====
+function trenutnaTema(){ try{ return localStorage.getItem('mesnica_tema')||'dark'; }catch(e){ return 'dark'; } }
+function osveziTemaGumbe(){
+  const t = trenutnaTema();
+  document.querySelectorAll('#temaSeg button').forEach(b=>b.classList.toggle('on', b.dataset.tema===t));
+}
+function nastaviTemo(t){
+  try{ localStorage.setItem('mesnica_tema', t); }catch(e){}
+  uveljaviTemo(t); osveziTemaGumbe();
+}
+if(window.matchMedia){
+  const mq = window.matchMedia('(prefers-color-scheme: dark)');
+  const onChg = ()=>{ if(trenutnaTema()==='auto') uveljaviTemo('auto'); };
+  if(mq.addEventListener) mq.addEventListener('change', onChg); else if(mq.addListener) mq.addListener(onChg);
+}
+osveziTemaGumbe();
+uveljaviTemo(trenutnaTema());
+
 function generirajSistemskeIkone() {
   const canvas = document.createElement('canvas');
   canvas.width = 512;
@@ -416,22 +484,28 @@ if(!Array.isArray(stranke)){
   localStorage.setItem('mesnica_stranke', JSON.stringify(stranke));
 }
 const cene_govedine = [
-  ['Goveja pljučna','33,00 €'],
-  ['Goveje stegno','13,00 €'],
-  ['Goveje pleče','12,00 €'],
-  ['Goveja cela zadnja noga','8,00 €'],
-  ['Goveji vrat s kostjo','10,00 €'],
-  ['Goveji vrat brez kosti','11,50 €'],
-  ['Goveji hrbet brez kosti','13,00 €'],
-  ['Goveji hrbet s kostjo','11,00 €'],
-  ['Goveja rebra','7,00 €'],
-  ['Goveji bočnik','11,50 €'],
-  ['Goveji flam','8,00 €'],
-  ['Goveja cela sprednja noga','7,00 €'],
-  ['Mleto meso - govedina','12,00 €'],
-  ['Mleto meso - govedina in svinjina','11,00 €'],
-  ['Goveje kosti','2,20 €']
+  ['Pljučna','33,00 €'],
+  ['Stegno','13,00 €'],
+  ['Pleče','12,00 €'],
+  ['Cela zadnja noga','8,00 €'],
+  ['Vrat s kostjo','10,00 €'],
+  ['Vrat brez kosti','11,50 €'],
+  ['Hrbet brez kosti','13,00 €'],
+  ['Hrbet s kostjo','11,00 €'],
+  ['Rebra','7,00 €'],
+  ['Bočnik','11,50 €'],
+  ['Flam','8,00 €'],
+  ['Cela sprednja noga','7,00 €'],
+  ['Mleto meso','12,00 €'],
+  ['Kosti','2,20 €']
 ];
+// Počisti imena (tudi v starih shranjenih AI ocenah): brez "Goveja/Goveje/Goveji", brez mešanega mletega z svinjino
+function lepoImeDela(k){
+  let n = String(k).trim().replace(/^gove(ja|je|ji)\s+/i,'');
+  n = n.replace(/^mleto meso\s*[-–]\s*govedina$/i,'Mleto meso');
+  return n.charAt(0).toUpperCase() + n.slice(1);
+}
+function jeSvinjina(k){ return /svinj/i.test(String(k)); }
 const VIR_ROCNIH = 'https://www.kmetijagrobelnik.si/index.php/izdelki/sveze-meso-govedina';
 let ceneAI = null;
 try{ ceneAI = JSON.parse(localStorage.getItem('mesnica_cene_ai') || 'null'); }catch(e){ ceneAI = null; }
@@ -516,7 +590,7 @@ async function snemajGlasovno() {
 
   const key = (localStorage.getItem('mesnica_gemini_key') || '').trim();
   if (!key) {
-    toast('Za glasovni vnos na iPhonu vnesi Gemini API ključ v ⚙️ Nastavitve.', 'danger', 6000);
+    toast('Za glasovni vnos na iPhonu vnesi Gemini API ključ v Nastavitve.', 'danger', 6000);
     prikaziGlasFallback(true, false);
     return;
   }
@@ -868,15 +942,15 @@ function odpriStranke(){ prikaziStranke(); const m=document.getElementById('moda
 function zapriStranke(){ const m=document.getElementById('modalStranke'); m.classList.add('hidden'); m.classList.remove('flex'); }
 function prikaziStranke(){
   const c=document.getElementById('seznamStrank'); c.innerHTML='';
-  if(stranke.length===0){ c.innerHTML='<div class="p-4 text-center text-xs text-zinc-500 italic">Ni shranjenih strank.</div>'; return; }
+  if(stranke.length===0){ c.innerHTML='<div class="p-4 text-center text-xs text-faint">Ni shranjenih strank.</div>'; return; }
   stranke.forEach((s,i)=>{
     const d=document.createElement('div');
-    d.className='flex items-center justify-between p-2 rounded-lg bg-zinc-900 border border-zinc-800 text-xs';
+    d.className='flex items-center justify-between p-2 rounded-lg bg-sub border border-line text-xs';
     const b=document.createElement('button');
-    b.className='font-medium text-zinc-200 text-left flex-1 hover:text-red-400'; b.textContent='👤 '+s;
+    b.className='font-medium text-ink text-left flex-1 hover:text-accent'; b.textContent=''+s;
     b.onclick=()=>{ document.getElementById('priimek').value=s; zapriStranke(); document.getElementById('teza').focus(); };
     const x=document.createElement('button');
-    x.className='text-red-400 font-bold ml-2 hover:text-red-300 p-1'; x.textContent='✕'; x.title='Odstrani stranko';
+    x.className='text-accent font-semibold ml-2 hover:text-accent2 p-1'; x.textContent='✕'; x.title='Odstrani stranko';
     x.onclick=()=>izbrisiStranko(i);
     d.appendChild(b); d.appendChild(x); c.appendChild(d);
   });
@@ -897,16 +971,16 @@ function esc(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;'
 function shraniGeminiKljuc(){ localStorage.setItem('mesnica_gemini_key', document.getElementById('geminiKljuc').value.trim()); }
 
 function prikaziCeneGovedine(){
-  const vrstice = ceneAI ? ceneAI.vrstice : cene_govedine;
+  const vrstice = (ceneAI ? ceneAI.vrstice : cene_govedine).filter(([k])=>!jeSvinjina(k));
   const tb=document.getElementById('tabelaCeneGovedine'); tb.innerHTML='';
   vrstice.forEach(([k,c])=>{
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td class="p-2.5 font-medium text-zinc-200">🥩 ${esc(k)}</td><td class="p-2.5 text-right mono text-red-400 font-bold whitespace-nowrap">${esc(c)}</td>`;
+    tr.innerHTML=`<td class="p-2.5 font-medium text-ink">${esc(lepoImeDela(k))}</td><td class="p-2.5 text-right mono text-ink whitespace-nowrap">${esc(c)}</td>`;
     tb.appendChild(tr);
   });
   const st=document.getElementById('statusCeneGovedine');
-  if(ceneAI) st.textContent = `✨ Ocena AI (${GEMINI_MODEL}) · posodobljeno ${new Date(ceneAI.datum).toLocaleString('sl-SI')}`;
-  else st.innerHTML = `Ročni podatki · cenik <a href="${VIR_ROCNIH}" target="_blank" rel="noopener" class="text-cyan-400 hover:text-cyan-300">Kmetija Grobelnik, Žalec ↗</a> €/kg`;
+  if(ceneAI) st.textContent = `Ocena AI (${GEMINI_MODEL}) · posodobljeno ${new Date(ceneAI.datum).toLocaleString('sl-SI')}`;
+  else st.innerHTML = `Ročni podatki · cenik <a href="${VIR_ROCNIH}" target="_blank" rel="noopener" class="text-link hover:opacity-70">Kmetija Grobelnik, Žalec ↗</a> €/kg`;
   const viri=document.getElementById('viriCeneGovedine'); viri.innerHTML='';
 }
 function odpriCeneGovedine(){
@@ -922,7 +996,7 @@ function ponastaviCeneGovedine(){
 }
 async function generirajCeneAI(){
   const key=(localStorage.getItem('mesnica_gemini_key')||'').trim();
-  if(!key){ toast('Najprej vnesite Gemini API ključ v ⚙️ Nastavitve.','danger'); return; }
+  if(!key){ toast('Najprej vnesite Gemini API ključ v Nastavitve.','danger'); return; }
   const btn=document.getElementById('btnGenerirajCene');
   btn.disabled=true; btn.textContent='⏳ Generiram oceno...';
   const imena=cene_govedine.map(r=>r[0]).join('; ');
@@ -948,7 +1022,7 @@ async function generirajCeneAI(){
   }catch(e){
     toast('Napaka: '+e.message,'danger');
   }finally{
-    btn.disabled=false; btn.textContent='✨ Generiraj oceno z AI';
+    btn.disabled=false; btn.textContent='Generiraj oceno z AI';
   }
 }
 function zapriCeneGovedine(){ const m=document.getElementById('modalCene'); m.classList.add('hidden'); m.classList.remove('flex'); }
@@ -983,7 +1057,7 @@ function odstraniPostavko(index){ trenutnePostavke.splice(index,1); osveziTabelo
 function osveziTabeloPostavk(){
   const tbody = document.getElementById('tabelaPostavk'); tbody.innerHTML='';
   if(trenutnePostavke.length===0){
-    tbody.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-zinc-500 italic">Ni dodanih postavk.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-faint">Ni dodanih postavk.</td></tr>`;
     document.getElementById('skupajZaPlacilo').textContent='0.00 €'; return;
   }
   let skupaj=0;
@@ -991,11 +1065,11 @@ function osveziTabeloPostavk(){
     skupaj += p.skupnaCena;
     const tr=document.createElement('tr');
     tr.innerHTML = `
-      <td class="py-2 font-medium text-zinc-200">${p.kos}</td>
-      <td class="py-2 text-right mono text-zinc-400">${p.cenaNaKg.toFixed(2)}</td>
-      <td class="py-2 text-right mono text-zinc-300">${p.teza.toFixed(2)}</td>
-      <td class="py-2 text-right mono font-bold text-red-400">${p.skupnaCena.toFixed(2)} €</td>
-      <td class="py-2 text-center"><button onclick="odstraniPostavko(${index})" class="text-red-400 font-bold hover:text-red-300 p-1">✕</button></td>`;
+      <td class="py-3 font-medium text-ink">${p.kos}</td>
+      <td class="py-3 text-right mono text-mute">${p.cenaNaKg.toFixed(2)}</td>
+      <td class="py-3 text-right mono text-ink2">${p.teza.toFixed(2)}</td>
+      <td class="py-3 text-right mono text-ink">${p.skupnaCena.toFixed(2)} €</td>
+      <td class="py-3 text-center"><button onclick="odstraniPostavko(${index})" class="text-accent font-semibold hover:text-accent2 p-1">✕</button></td>`;
     tbody.appendChild(tr);
   });
   document.getElementById('skupajZaPlacilo').textContent = `${skupaj.toFixed(2)} €`;
@@ -1082,48 +1156,48 @@ function prikaziShranjeneRacune(){
   });
 
   if(filtrirani.length===0){
-    seznam.innerHTML = `<div class="p-6 text-center text-xs text-zinc-500 italic">Ni shranjenih računov.</div>`;
+    seznam.innerHTML = `<div class="p-6 text-center text-xs text-faint">Ni shranjenih računov.</div>`;
     return;
   }
 
   filtrirani.forEach(racun=>{
     const div=document.createElement('div');
-    div.className="p-3.5 rounded-xl bg-zinc-900/60 border border-zinc-800 text-xs space-y-2";
-    const postavkeHtml = racun.postavke.map(p=>`<li class="flex justify-between text-zinc-400 py-0.5 border-b border-zinc-800/40 last:border-0"><span>🥩 ${p.kos} (${p.teza} kg)</span><span class="mono text-zinc-200">${p.skupnaCena.toFixed(2)} €</span></li>`).join('');
+    div.className="p-3.5 rounded-xl bg-sub border border-line text-xs space-y-2";
+    const postavkeHtml = racun.postavke.map(p=>`<li class="flex justify-between text-mute py-0.5 border-b border-line last:border-0"><span>${p.kos} (${p.teza} kg)</span><span class="mono text-ink">${p.skupnaCena.toFixed(2)} €</span></li>`).join('');
     div.innerHTML = `
       <div class="flex justify-between items-start">
         <div>
-          <strong class="text-sm font-bold text-zinc-100">${racun.priimek}</strong>
-          <div class="text-[10px] text-zinc-400">Datum: ${urediPrikazDatuma(racun.datum)}</div>
+          <strong class="text-sm font-semibold text-ink">${racun.priimek}</strong>
+          <div class="text-[10px] text-mute">Datum: ${urediPrikazDatuma(racun.datum)}</div>
         </div>
         <div class="text-right">
-          <span class="font-extrabold text-sm text-red-400 mono">${racun.skupaj.toFixed(2)} €</span>
-          <div class="flex gap-2 mt-1 justify-end text-[11px] font-bold">
-            <button onclick="kopirajRacunTxt(${racun.id})" class="text-cyan-400 hover:text-cyan-300">Kopiraj</button>
-            <button onclick="urediRacun(${racun.id})" class="text-amber-400 hover:text-amber-300">Uredi</button>
-            <button onclick="izbrisiRacun(${racun.id})" class="text-red-400 hover:text-red-300">Izbriši</button>
+          <span class="text-base text-ink mono">${racun.skupaj.toFixed(2)} €</span>
+          <div class="flex gap-2 mt-1 justify-end text-[11px] font-semibold">
+            <button onclick="kopirajRacunTxt(${racun.id})" class="text-link hover:opacity-70">Kopiraj</button>
+            <button onclick="urediRacun(${racun.id})" class="text-warn hover:opacity-70">Uredi</button>
+            <button onclick="izbrisiRacun(${racun.id})" class="text-accent hover:text-accent2">Izbriši</button>
           </div>
         </div>
       </div>
-      <ul class="p-2 rounded-lg bg-zinc-950/50 border border-zinc-800/80">${postavkeHtml}</ul>
-      ${racun.opombe ? `<p class="text-[11px] italic text-zinc-400">📝 ${racun.opombe}</p>` : ''}`;
+      <ul class="p-2 rounded-lg bg-sub border border-line">${postavkeHtml}</ul>
+      ${racun.opombe ? `<p class="text-[11px] text-mute">${racun.opombe}</p>` : ''}`;
     seznam.appendChild(div);
   });
 }
 
-function odpriNastavitve(){ document.getElementById('geminiKljuc').value=localStorage.getItem('mesnica_gemini_key')||''; prikaziCenikVNastavitvah(); document.getElementById('modalNastavitve').classList.remove('hidden'); document.getElementById('modalNastavitve').classList.add('flex'); }
+function odpriNastavitve(){ osveziTemaGumbe(); document.getElementById('geminiKljuc').value=localStorage.getItem('mesnica_gemini_key')||''; prikaziCenikVNastavitvah(); document.getElementById('modalNastavitve').classList.remove('hidden'); document.getElementById('modalNastavitve').classList.add('flex'); }
 function zapriNastavitve(){ document.getElementById('modalNastavitve').classList.add('hidden'); document.getElementById('modalNastavitve').classList.remove('flex'); napolniIzbiroMesa(); }
 
 function prikaziCenikVNastavitvah(){
   const container=document.getElementById('seznamCenika'); container.innerHTML='';
   Object.keys(cenik).forEach(kos=>{
     const div=document.createElement('div');
-    div.className="flex items-center justify-between p-2 rounded-lg bg-zinc-900 border border-zinc-800 text-xs";
-    div.innerHTML = `<span class="font-medium text-zinc-200">🥩 ${kos}</span>
+    div.className="flex items-center justify-between p-2 rounded-lg bg-sub border border-line text-xs";
+    div.innerHTML = `<span class="font-medium text-ink">${kos}</span>
       <div class="flex items-center gap-1">
         <input type="text" inputmode="decimal" value="${cenik[kos]}" onchange="posodobiCenoMesa('${kos}', this.value)" class="input w-16 py-1 text-right text-xs mono" oninput="popraviInputLočilo(this)" onkeypress="allowComma(event)">
-        <span class="text-zinc-500">€/kg</span>
-        <button onclick="izbrisiKosMesa('${kos}')" class="text-red-400 font-bold ml-1 p-1">✕</button>
+        <span class="text-faint">€/kg</span>
+        <button onclick="izbrisiKosMesa('${kos}')" class="text-accent font-semibold ml-1 p-1">✕</button>
       </div>`;
     container.appendChild(div);
   });
@@ -1260,7 +1334,7 @@ function izracunajInPrikaziStatistiko(){
   const tbody=document.getElementById('tabelaStatistike'); tbody.innerHTML='';
   Object.keys(zbirnik).sort((a,b)=>zbirnik[b].teza-zbirnik[a].teza).forEach(k=>{
     const tr=document.createElement('tr');
-    tr.innerHTML = `<td class="p-2.5 font-medium text-zinc-200">🥩 ${k}</td><td class="p-2.5 text-right mono text-zinc-300">${zbirnik[k].teza.toFixed(2)} kg</td><td class="p-2.5 text-right mono text-red-400 font-bold">${zbirnik[k].vrednost.toFixed(2)} €</td>`;
+    tr.innerHTML = `<td class="p-2.5 font-medium text-ink">${k}</td><td class="p-2.5 text-right mono text-ink2">${zbirnik[k].teza.toFixed(2)} kg</td><td class="p-2.5 text-right mono text-ink">${zbirnik[k].vrednost.toFixed(2)} €</td>`;
     tbody.appendChild(tr);
   });
   document.getElementById('statSkupnaTeza').textContent = `${skupnaT.toFixed(2)} kg`;
