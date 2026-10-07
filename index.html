@@ -23,8 +23,8 @@ function uveljaviTemo(t){
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Obračun mesa">
 
-<!-- Favicon z emojijem -->
-<link id="favicon" rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text x='50%' y='55%' dominant-baseline='central' text-anchor='middle' font-size='75'>🥩</text></svg>">
+<!-- Moderna ikona goveda -->
+<link id="favicon" rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%2309090b'/%3E%3Cpath d='M18 24 10 17l3 12v9c0 9 6 15 19 15s19-6 19-15v-9l3-12-8 7c-4-3-8-4-14-4s-10 1-14 4Z' fill='none' stroke='%23fff' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M23 39c3 3 5 4 9 4s6-1 9-4M25 33h.1M39 33h.1' fill='none' stroke='%23ef4444' stroke-width='3.5' stroke-linecap='round'/%3E%3C/svg%3E">
 <link id="appleIcon" rel="apple-touch-icon" href="">
 
 <!-- Manifest za Android/Chrome -->
@@ -157,8 +157,8 @@ button:active { transform: scale(.98); }
   <!-- HEADER -->
   <div class="card p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
     <div class="flex items-center gap-3 w-full sm:w-auto justify-center sm:justify-start">
-      <div class="w-11 h-11 rounded-2xl bg-sub border border-line flex items-center justify-center text-2xl select-none">
-        🥩
+      <div class="app-logo w-12 h-12 rounded-2xl bg-sub border border-line flex items-center justify-center select-none" aria-label="Obračun mesa – govedo">
+        <span data-ui-icon="cow" data-icon-class="w-9 h-9" class="w-9 h-9 text-accent flex items-center justify-center"></span>
       </div>
       <div>
         <h1 class="text-xl font-semibold tracking-tight flex items-center gap-2">Obračun mesa</h1>
@@ -169,16 +169,16 @@ button:active { transform: scale(.98); }
     <!-- Navigacijski gumbi -->
     <div class="grid grid-cols-2 sm:flex sm:flex-wrap items-center justify-center gap-2 w-full sm:w-auto">
       <button id="installAppBtn" onclick="installPWA()" title="Namesti aplikacijo" class="hidden col-span-2 sm:col-span-1 px-3 py-2 text-xs font-semibold rounded-xl bg-chip hover:bg-chip2 border border-line2 text-accent flex items-center justify-center gap-2 transition-colors">
-        Namesti
+        <span data-ui-icon="download" data-icon-class="w-3.5 h-3.5"></span><span>Namesti</span>
       </button>
-      <button onclick="odpriStranke()" class="px-3 py-2 text-xs font-semibold rounded-xl bg-chip hover:bg-chip2 border border-line2 text-ink2 transition-colors text-center">
-        Stranke
+      <button onclick="odpriStranke()" class="px-3 py-2 text-xs font-semibold rounded-xl bg-chip hover:bg-chip2 border border-line2 text-ink2 transition-colors text-center flex items-center justify-center gap-1.5">
+        <span data-ui-icon="users" data-icon-class="w-3.5 h-3.5"></span><span>Stranke</span>
       </button>
-      <button onclick="odpriStatistiko()" class="px-3 py-2 text-xs font-semibold rounded-xl bg-chip hover:bg-chip2 border border-line2 text-ink2 transition-colors text-center">
-        Statistika
+      <button onclick="odpriStatistiko()" class="px-3 py-2 text-xs font-semibold rounded-xl bg-chip hover:bg-chip2 border border-line2 text-ink2 transition-colors text-center flex items-center justify-center gap-1.5">
+        <span data-ui-icon="chart" data-icon-class="w-3.5 h-3.5"></span><span>Statistika</span>
       </button>
-      <button onclick="odpriNastavitve()" class="col-span-2 sm:col-span-1 px-3 py-2 text-xs font-semibold rounded-xl bg-chip hover:bg-chip2 border border-line2 text-ink2 transition-colors text-center">
-        Nastavitve
+      <button onclick="odpriNastavitve()" class="col-span-2 sm:col-span-1 px-3 py-2 text-xs font-semibold rounded-xl bg-chip hover:bg-chip2 border border-line2 text-ink2 transition-colors text-center flex items-center justify-center gap-1.5">
+        <span data-ui-icon="settings" data-icon-class="w-3.5 h-3.5"></span><span>Nastavitve</span>
       </button>
     </div>
   </div>
@@ -218,7 +218,7 @@ button:active { transform: scale(.98); }
           </div>
           <!-- GUMB ZA GLASOVNI VNOS -->
           <button id="micBtn" onclick="poslusajGlasovno()" title="Glasovni vnos kosa in teže" class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-chip hover:bg-chip2 border border-line2 text-accent flex items-center gap-1.5 transition-colors">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg> <span id="micText">Govori</span>
+            <span data-ui-icon="mic" data-icon-class="w-3.5 h-3.5"></span><span id="micText">Govori</span>
           </button>
         </div>
 
@@ -227,7 +227,7 @@ button:active { transform: scale(.98); }
           <input type="text" id="glasFallbackInput" class="input" autocomplete="off" autocapitalize="off" enterkeyhint="done"
                  placeholder='Npr. "stegno 12,5" (tapni 🎤 na tipkovnici)'
                  onkeydown="if(event.key==='Enter'){potrdiTekstovniVnos();}">
-          <button onclick="potrdiTekstovniVnos()" class="px-3 py-2 text-xs font-semibold rounded-lg bg-chip hover:bg-chip2 border border-line2 text-ink">OK</button>
+          <button onclick="potrdiTekstovniVnos()" class="px-3 py-2 text-xs font-semibold rounded-lg bg-chip hover:bg-chip2 border border-line2 text-ink flex items-center gap-1.5"><span data-ui-icon="check" data-icon-class="w-3.5 h-3.5"></span><span>OK</span></button>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
@@ -242,8 +242,8 @@ button:active { transform: scale(.98); }
         </div>
         <div class="flex items-center justify-between pt-1">
           <span class="text-xs text-mute">Cena: <strong id="cenaNaKgPrikaz" class="text-ink mono">0.00 €/kg</strong></span>
-          <button onclick="dodajPostavko()" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-accent hover:bg-accent2 text-white transition-colors">
-            + Dodaj
+          <button onclick="dodajPostavko()" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-accent hover:bg-accent2 text-white transition-colors flex items-center gap-1.5">
+            <span data-ui-icon="plus" data-icon-class="w-3.5 h-3.5"></span><span>Dodaj</span>
           </button>
         </div>
       </div>
@@ -271,8 +271,8 @@ button:active { transform: scale(.98); }
           <div id="skupajZaPlacilo" class="text-4xl text-ink result">0.00 €</div>
         </div>
         <div class="flex gap-2">
-          <button id="btnPrekliciUrejanje" onclick="prekliciUrejanje()" class="hidden px-3 py-2 text-xs font-semibold rounded-lg bg-chip hover:bg-chip2 text-ink2">Prekliči</button>
-          <button onclick="shraniRacun()" class="px-4 py-2 text-xs font-semibold rounded-xl bg-accent hover:bg-accent2 text-white transition-colors">Shrani račun</button>
+          <button id="btnPrekliciUrejanje" onclick="prekliciUrejanje()" class="hidden px-3 py-2 text-xs font-semibold rounded-lg bg-chip hover:bg-chip2 text-ink2 flex items-center gap-1.5"><span data-ui-icon="x" data-icon-class="w-3.5 h-3.5"></span><span>Prekliči</span></button>
+          <button onclick="shraniRacun()" class="px-4 py-2 text-xs font-semibold rounded-xl bg-accent hover:bg-accent2 text-white transition-colors flex items-center gap-1.5"><span data-ui-icon="save" data-icon-class="w-3.5 h-3.5"></span><span>Shrani račun</span></button>
         </div>
       </div>
     </div>
@@ -281,7 +281,7 @@ button:active { transform: scale(.98); }
     <div class="lg:col-span-6 card p-5 space-y-4">
       <div class="flex flex-wrap items-center justify-between gap-2 border-b border-line pb-3">
         <h2 class="text-base font-semibold text-ink">Shranjeni računi</h2>
-        <button onclick="izvoziVseRacuneTxt()" class="px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-chip hover:bg-chip2 text-ink2 border border-line2">Izvozi TXT</button>
+        <button onclick="izvoziVseRacuneTxt()" class="px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-chip hover:bg-chip2 text-ink2 border border-line2 flex items-center gap-1.5"><span data-ui-icon="export" data-icon-class="w-3.5 h-3.5"></span><span>Izvozi TXT</span></button>
       </div>
 
       <div class="grid grid-cols-2 gap-2">
@@ -300,22 +300,22 @@ button:active { transform: scale(.98); }
   <div class="card max-w-md w-full p-5 space-y-4 max-h-[92vh] overflow-y-auto">
     <div class="flex justify-between items-center border-b border-line pb-2">
       <h3 class="text-base font-semibold flex items-center gap-1.5">Nastavitve</h3>
-      <button onclick="zapriNastavitve()" class="text-mute hover:text-ink p-1">✕</button>
+      <button onclick="zapriNastavitve()" class="text-mute hover:text-ink p-1" aria-label="Zapri"><span data-ui-icon="close" data-icon-class="w-4 h-4"></span></button>
     </div>
 
     <div class="bg-sub p-3 rounded-xl border border-line space-y-2">
       <div class="text-xs font-semibold text-mute">Videz</div>
       <div class="seg" id="temaSeg">
-        <button data-tema="light" onclick="nastaviTemo('light')">Svetla</button>
-        <button data-tema="dark" onclick="nastaviTemo('dark')">Temna</button>
-        <button data-tema="auto" onclick="nastaviTemo('auto')">Samodejno</button>
+        <button data-tema="light" onclick="nastaviTemo('light')" class="flex items-center justify-center gap-1.5"><span data-ui-icon="sun" data-icon-class="w-3.5 h-3.5"></span><span>Svetla</span></button>
+        <button data-tema="dark" onclick="nastaviTemo('dark')" class="flex items-center justify-center gap-1.5"><span data-ui-icon="moon" data-icon-class="w-3.5 h-3.5"></span><span>Temna</span></button>
+        <button data-tema="auto" onclick="nastaviTemo('auto')" class="flex items-center justify-center gap-1.5"><span data-ui-icon="monitor" data-icon-class="w-3.5 h-3.5"></span><span>Samodejno</span></button>
       </div>
     </div>
 
     <div class="bg-sub p-3 rounded-xl border border-line space-y-2">
       <div class="text-xs font-semibold text-mute flex items-center gap-1">Tržne cene</div>
       <button onclick="odpriCeneGovedineIZNastavitev()" class="w-full py-2 text-xs font-semibold rounded-xl bg-chip hover:bg-chip2 border border-line2 text-ink transition-colors flex items-center justify-center gap-2">
-        Cene govedine v Sloveniji
+        <span data-ui-icon="cow" data-icon-class="w-4 h-4"></span><span>Cene govedine v Sloveniji</span>
       </button>
     </div>
 
@@ -325,7 +325,7 @@ button:active { transform: scale(.98); }
         <input type="text" id="novKosIme" placeholder="Naziv kosa" class="input text-xs py-1.5">
         <input type="text" inputmode="decimal" id="novKosCena" placeholder="€/kg" class="input text-xs py-1.5" oninput="popraviInputLočilo(this)" onkeypress="allowComma(event)">
       </div>
-      <button onclick="dodajNovKosMesa()" class="w-full py-1.5 text-xs font-semibold bg-accent hover:bg-accent2 rounded-lg text-white">Dodaj na cenik</button>
+      <button onclick="dodajNovKosMesa()" class="w-full py-1.5 text-xs font-semibold bg-accent hover:bg-accent2 rounded-lg text-white flex items-center justify-center gap-1.5"><span data-ui-icon="plus" data-icon-class="w-3.5 h-3.5"></span><span>Dodaj na cenik</span></button>
     </div>
     <div id="seznamCenika" class="max-h-48 overflow-y-auto space-y-1.5 pr-1"></div>
     <div class="bg-sub p-3 rounded-xl border border-line space-y-2">
@@ -336,12 +336,12 @@ button:active { transform: scale(.98); }
       <p class="text-[10px] text-faint">Ključ se shrani samo v tej napravi in ni del izvoza JSON. Cenik zgoraj ostane povsem ročen; AI vpliva samo na okno »Cene govedine«.</p>
     </div>
     <div class="border-t border-line pt-3 flex justify-between">
-      <button onclick="exportPodatki()" class="text-xs font-semibold text-mute hover:text-ink">Izvoz JSON</button>
-      <button onclick="document.getElementById('uvozInput').click()" class="text-xs font-semibold text-mute hover:text-ink">Uvoz JSON</button>
+      <button onclick="exportPodatki()" class="text-xs font-semibold text-mute hover:text-ink flex items-center gap-1.5"><span data-ui-icon="export" data-icon-class="w-3.5 h-3.5"></span><span>Izvoz JSON</span></button>
+      <button onclick="document.getElementById('uvozInput').click()" class="text-xs font-semibold text-mute hover:text-ink flex items-center gap-1.5"><span data-ui-icon="import" data-icon-class="w-3.5 h-3.5"></span><span>Uvoz JSON</span></button>
       <input type="file" id="uvozInput" accept="application/json" class="hidden" onchange="importPodatki(event)">
     </div>
     <div class="pt-2 text-right">
-      <button onclick="zapriNastavitve()" class="px-4 py-1.5 text-xs font-semibold rounded-lg bg-chip hover:bg-chip2">Zapri</button>
+      <button onclick="zapriNastavitve()" class="px-4 py-1.5 text-xs font-semibold rounded-lg bg-chip hover:bg-chip2 flex items-center gap-1.5"><span data-ui-icon="close" data-icon-class="w-3.5 h-3.5"></span><span>Zapri</span></button>
     </div>
   </div>
 </div>
@@ -351,7 +351,7 @@ button:active { transform: scale(.98); }
   <div class="card max-w-xl w-full p-5 space-y-4">
     <div class="flex justify-between items-center border-b border-line pb-2">
       <h3 class="text-base font-semibold flex items-center gap-1.5">Skupna statistika</h3>
-      <button onclick="zapriStatistiko()" class="text-mute hover:text-ink p-1">✕</button>
+      <button onclick="zapriStatistiko()" class="text-mute hover:text-ink p-1" aria-label="Zapri"><span data-ui-icon="close" data-icon-class="w-4 h-4"></span></button>
     </div>
     <div class="flex items-center gap-3">
       <label class="text-xs text-mute font-semibold">Datum:</label>
@@ -370,7 +370,7 @@ button:active { transform: scale(.98); }
       <span class="text-xs text-mute">Skupaj vrednost: <strong id="statSkupnaVrednost" class="text-ink mono">0.00 €</strong></span>
     </div>
     <div class="text-right pt-2">
-      <button onclick="zapriStatistiko()" class="px-4 py-1.5 text-xs font-semibold rounded-lg bg-chip hover:bg-chip2">Zapri</button>
+      <button onclick="zapriStatistiko()" class="px-4 py-1.5 text-xs font-semibold rounded-lg bg-chip hover:bg-chip2 flex items-center gap-1.5"><span data-ui-icon="close" data-icon-class="w-3.5 h-3.5"></span><span>Zapri</span></button>
     </div>
   </div>
 </div>
@@ -380,15 +380,15 @@ button:active { transform: scale(.98); }
   <div class="card max-w-md w-full p-5 space-y-4">
     <div class="flex justify-between items-center border-b border-line pb-2">
       <h3 class="text-base font-semibold">Stalne stranke</h3>
-      <button onclick="zapriStranke()" class="text-mute hover:text-ink p-1">✕</button>
+      <button onclick="zapriStranke()" class="text-mute hover:text-ink p-1" aria-label="Zapri"><span data-ui-icon="close" data-icon-class="w-4 h-4"></span></button>
     </div>
     <div class="flex gap-2">
       <input type="text" id="novaStranka" placeholder="Nova stranka" class="input text-xs py-1.5" onkeydown="if(event.key==='Enter')dodajStrankoRocno()">
-      <button onclick="dodajStrankoRocno()" class="px-3 text-xs font-semibold bg-accent hover:bg-accent2 rounded-lg text-white whitespace-nowrap">+ Dodaj</button>
+      <button onclick="dodajStrankoRocno()" class="px-3 text-xs font-semibold bg-accent hover:bg-accent2 rounded-lg text-white whitespace-nowrap flex items-center gap-1.5"><span data-ui-icon="plus" data-icon-class="w-3.5 h-3.5"></span><span>Dodaj</span></button>
     </div>
     <p class="text-[11px] text-faint">Stranka se shrani samodejno ob shranjevanju računa. Tapni ime, da ga vneseš v obrazec.</p>
     <div id="seznamStrank" class="max-h-64 overflow-y-auto space-y-1.5 pr-1"></div>
-    <div class="text-right"><button onclick="zapriStranke()" class="px-4 py-1.5 text-xs font-semibold rounded-lg bg-chip hover:bg-chip2">Zapri</button></div>
+    <div class="text-right"><button onclick="zapriStranke()" class="px-4 py-1.5 text-xs font-semibold rounded-lg bg-chip hover:bg-chip2 flex items-center gap-1.5"><span data-ui-icon="close" data-icon-class="w-3.5 h-3.5"></span><span>Zapri</span></button></div>
   </div>
 </div>
 
@@ -397,12 +397,12 @@ button:active { transform: scale(.98); }
   <div class="card max-w-md w-full p-5 space-y-4 max-h-[92vh] overflow-y-auto">
     <div class="flex justify-between items-center border-b border-line pb-2">
       <h3 class="text-base font-semibold">Cene govejega mesa v Sloveniji</h3>
-      <button onclick="zapriCeneGovedine()" class="text-mute hover:text-ink p-1">✕</button>
+      <button onclick="zapriCeneGovedine()" class="text-mute hover:text-ink p-1" aria-label="Zapri"><span data-ui-icon="close" data-icon-class="w-4 h-4"></span></button>
     </div>
     <p class="text-xs text-mute">Cene govejega mesa po delih (€/kg)</p>
     <div class="flex gap-2">
-      <button id="btnGenerirajCene" onclick="generirajCeneAI()" class="flex-1 py-1.5 text-xs font-semibold rounded-lg bg-accent hover:bg-accent2 text-white transition-colors">Generiraj oceno z AI</button>
-      <button onclick="ponastaviCeneGovedine()" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-chip hover:bg-chip2 border border-line2 text-ink2">Ročni podatki</button>
+      <button id="btnGenerirajCene" onclick="generirajCeneAI()" class="flex-1 py-1.5 text-xs font-semibold rounded-lg bg-accent hover:bg-accent2 text-white transition-colors flex items-center justify-center gap-1.5"><span data-ui-icon="robot" data-icon-class="w-3.5 h-3.5"></span><span>Generiraj oceno z AI</span></button>
+      <button onclick="ponastaviCeneGovedine()" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-chip hover:bg-chip2 border border-line2 text-ink2 flex items-center gap-1.5"><span data-ui-icon="edit" data-icon-class="w-3.5 h-3.5"></span><span>Ročni podatki</span></button>
     </div>
     <div id="statusCeneGovedine" class="text-[11px] text-faint"></div>
     <div class="border border-line rounded-xl overflow-hidden">
@@ -413,7 +413,7 @@ button:active { transform: scale(.98); }
     </div>
     <div id="viriCeneGovedine" class="text-[11px] space-y-0.5"></div>
     <p class="text-[11px] text-faint">Okvirne cene, namenjene primerjavi z lastnim cenikom. Ocene AI lahko vsebujejo napake.</p>
-    <div class="text-right"><button onclick="zapriCeneGovedine()" class="px-4 py-1.5 text-xs font-semibold rounded-lg bg-chip hover:bg-chip2">Zapri</button></div>
+    <div class="text-right"><button onclick="zapriCeneGovedine()" class="px-4 py-1.5 text-xs font-semibold rounded-lg bg-chip hover:bg-chip2 flex items-center gap-1.5"><span data-ui-icon="close" data-icon-class="w-3.5 h-3.5"></span><span>Zapri</span></button></div>
   </div>
 </div>
 
@@ -436,41 +436,80 @@ if(window.matchMedia){
 osveziTemaGumbe();
 uveljaviTemo(trenutnaTema());
 
-function generirajSistemskeIkone() {
-  const canvas = document.createElement('canvas');
-  canvas.width = 512;
-  canvas.height = 512;
-  const ctx = canvas.getContext('2d');
-
-  ctx.fillStyle = '#09090b';
-  ctx.fillRect(0, 0, 512, 512);
-
-  ctx.font = '260px sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('🥩', 256, 268);
-
-  const pngUrl = canvas.toDataURL('image/png');
-  document.getElementById('appleIcon').setAttribute('href', pngUrl);
-
-  const manifest = {
-    "name": "Obračun Mesa",
-    "short_name": "Meso",
-    "start_url": ".",
-    "display": "standalone",
-    "background_color": "#09090b",
-    "theme_color": "#09090b",
-    "icons": [
-      { 
-        "src": pngUrl, 
-        "sizes": "512x512", 
-        "type": "image/png", 
-        "purpose": "any maskable" 
-      }
-    ]
+/* ===== MODERNE ENOTNE IKONE ===== */
+function uiIcon(name, cls='w-4 h-4') {
+  const common = `class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"`;
+  const paths = {
+    cow: `<path d="M6.2 8.2 3.8 4.8l4.6 1.4C9.7 5.1 10.8 4.6 12 4.6s2.3.5 3.6 1.6l4.6-1.4-2.4 3.4v5.6c0 3.5-2.4 5.8-5.8 5.8s-5.8-2.3-5.8-5.8V8.2Z"/><path d="M7.1 10.3 4.8 9.1M16.9 10.3l2.3-1.2M9.1 14.7c.9.8 1.9 1.2 2.9 1.2s2-.4 2.9-1.2M9.4 12.1h.01M14.6 12.1h.01"/><path d="M9.4 19.2v2M14.6 19.2v2"/>`,
+    users: `<path d="M16 21v-1.5a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4V21"/><circle cx="9.5" cy="7.5" r="3.5"/><path d="M16 4.2a3.5 3.5 0 0 1 0 6.6M20.5 21v-1.5a4 4 0 0 0-3-3.8"/>`,
+    chart: `<path d="M4 19V5M4 19h17"/><path d="m7 15 3-4 3 2 5-6"/><path d="M18 7h2v2"/>`,
+    settings: `<path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6 7 7M17 17l1.4 1.4M18.4 5.6 17 7M7 17l-1.4 1.4"/><circle cx="12" cy="12" r="3.5"/>`,
+    download: `<path d="M12 3v11"/><path d="m8 10 4 4 4-4M5 20h14"/>`,
+    mic: `<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M9 21h6"/>`,
+    plus: `<path d="M12 5v14M5 12h14"/>`,
+    save: `<path d="M5 4h11l3 3v13H5z"/><path d="M8 4v6h8V4M9 20v-6h6v6"/>`,
+    x: `<path d="m6 6 12 12M18 6 6 18"/>`,
+    export: `<path d="M12 3v12M8 7l4-4 4 4M5 14v5h14v-5"/>`,
+    import: `<path d="M12 15V3M8 7l4-4 4 4M5 14v5h14v-5"/>`,
+    beef: `<path d="M5.5 13.5c0-4.3 3.2-7.5 7.6-7.5 2.7 0 4.8 1 6.1 2.8 1.2 1.7.8 4.1-.9 5.5-1.5 1.3-3.5 2.2-6 2.2-4.1 0-6.8-1.1-6.8-3Z"/><path d="M9 10.2c1-.9 2.2-1.2 3.3-.7M13.5 14.5c1.2-.4 2.3-.1 3.1.6M16.8 9.7c.7.5.9 1.2.6 1.9"/>`,
+    copy: `<rect x="8" y="8" width="11" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h2"/>`,
+    edit: `<path d="M4 20h4L19 9l-4-4L4 16v4Z"/><path d="m13.5 6.5 4 4"/>`,
+    trash: `<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>`,
+    search: `<circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4 4"/>`,
+    money: `<rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 9h.01M18 15h.01"/>`,
+    robot: `<rect x="5" y="7" width="14" height="12" rx="3"/><path d="M12 4v3M8.5 12h.01M15.5 12h.01M9 16h6"/>`,
+    database: `<ellipse cx="12" cy="6" rx="7" ry="3"/><path d="M5 6v6c0 1.7 3.1 3 7 3s7-1.3 7-3V6M5 12v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6"/>`,
+    sun: `<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>`,
+    moon: `<path d="M20 15.5A8 8 0 0 1 8.5 4 8.5 8.5 0 1 0 20 15.5Z"/>`,
+    monitor: `<rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 21h8M12 18v3"/>`,
+    close: `<path d="m6 6 12 12M18 6 6 18"/>`,
+    check: `<path d="m5 12 4 4L19 6"/>`
   };
-  const manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
-  document.getElementById('manifestLink').setAttribute('href', URL.createObjectURL(manifestBlob));
+  return `<svg ${common}>${paths[name] || paths.beef}</svg>`;
+}
+
+function hydrateStaticIcons(){
+  document.querySelectorAll('[data-ui-icon]').forEach(el=>{
+    el.innerHTML = uiIcon(el.dataset.uiIcon, el.dataset.iconClass || 'w-4 h-4');
+  });
+}
+
+hydrateStaticIcons();
+function generirajSistemskeIkone() {
+  // Ena preprosta ikona goveda za favicon, iOS in PWA.
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+    <rect width="64" height="64" rx="16" fill="#09090b"/>
+    <path d="M18 24 10 17l3 12v9c0 9 6 15 19 15s19-6 19-15v-9l3-12-8 7c-4-3-8-4-14-4s-10 1-14 4Z" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M23 39c3 3 5 4 9 4s6-1 9-4M25 33h.1M39 33h.1" fill="none" stroke="#ef4444" stroke-width="3.5" stroke-linecap="round"/>
+  </svg>`;
+
+  const iconImg = new Image();
+  iconImg.onload = function(){
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 512;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(iconImg, 0, 0, 512, 512);
+    const pngUrl = canvas.toDataURL('image/png');
+
+    const apple = document.getElementById('appleIcon');
+    if (apple) apple.setAttribute('href', pngUrl);
+
+    const manifest = {
+      name: 'Obračun Mesa',
+      short_name: 'Meso',
+      start_url: '.',
+      display: 'standalone',
+      background_color: '#09090b',
+      theme_color: '#09090b',
+      icons: [
+        { src: pngUrl, sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
+      ]
+    };
+    const manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
+    document.getElementById('manifestLink').setAttribute('href', URL.createObjectURL(manifestBlob));
+  };
+  iconImg.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
 }
 generirajSistemskeIkone();
 
@@ -1069,7 +1108,7 @@ function osveziTabeloPostavk(){
       <td class="py-3 text-right mono text-mute">${p.cenaNaKg.toFixed(2)}</td>
       <td class="py-3 text-right mono text-ink2">${p.teza.toFixed(2)}</td>
       <td class="py-3 text-right mono text-ink">${p.skupnaCena.toFixed(2)} €</td>
-      <td class="py-3 text-center"><button onclick="odstraniPostavko(${index})" class="text-accent font-semibold hover:text-accent2 p-1">✕</button></td>`;
+      <td class="py-3 text-center"><button onclick="odstraniPostavko(${index})" title="Odstrani" aria-label="Odstrani postavko" class="text-accent hover:text-accent2 p-1.5 rounded-lg hover:bg-accent/10">${uiIcon('trash','w-3.5 h-3.5')}</button></td>`;
     tbody.appendChild(tr);
   });
   document.getElementById('skupajZaPlacilo').textContent = `${skupaj.toFixed(2)} €`;
@@ -1173,9 +1212,9 @@ function prikaziShranjeneRacune(){
         <div class="text-right">
           <span class="text-base text-ink mono">${racun.skupaj.toFixed(2)} €</span>
           <div class="flex gap-2 mt-1 justify-end text-[11px] font-semibold">
-            <button onclick="kopirajRacunTxt(${racun.id})" class="text-link hover:opacity-70">Kopiraj</button>
-            <button onclick="urediRacun(${racun.id})" class="text-warn hover:opacity-70">Uredi</button>
-            <button onclick="izbrisiRacun(${racun.id})" class="text-accent hover:text-accent2">Izbriši</button>
+            <button onclick="kopirajRacunTxt(${racun.id})" title="Kopiraj" class="text-link hover:opacity-70 p-1 rounded-lg hover:bg-link/10">${uiIcon('copy','w-3.5 h-3.5')}</button>
+            <button onclick="urediRacun(${racun.id})" title="Uredi" class="text-warn hover:opacity-70 p-1 rounded-lg hover:bg-warn/10">${uiIcon('edit','w-3.5 h-3.5')}</button>
+            <button onclick="izbrisiRacun(${racun.id})" title="Izbriši" class="text-accent hover:text-accent2 p-1 rounded-lg hover:bg-accent/10">${uiIcon('trash','w-3.5 h-3.5')}</button>
           </div>
         </div>
       </div>
@@ -1197,7 +1236,7 @@ function prikaziCenikVNastavitvah(){
       <div class="flex items-center gap-1">
         <input type="text" inputmode="decimal" value="${cenik[kos]}" onchange="posodobiCenoMesa('${kos}', this.value)" class="input w-16 py-1 text-right text-xs mono" oninput="popraviInputLočilo(this)" onkeypress="allowComma(event)">
         <span class="text-faint">€/kg</span>
-        <button onclick="izbrisiKosMesa('${kos}')" class="text-accent font-semibold ml-1 p-1">✕</button>
+        <button onclick="izbrisiKosMesa('${kos}')" title="Izbriši" class="text-accent hover:text-accent2 ml-1 p-1">${uiIcon('trash','w-3.5 h-3.5')}</button>
       </div>`;
     container.appendChild(div);
   });
