@@ -287,6 +287,18 @@ tbody tr:hover{ background: rgb(var(--c-sub)); }
         </table>
       </div>
 
+      <!-- FOTOGRAFIJE -->
+      <div class="bg-sub border border-line p-3.5 rounded-xl space-y-3">
+        <div class="text-xs font-semibold text-mute">Fotografije (neobvezno)</div>
+        <div class="grid grid-cols-2 gap-2">
+          <button type="button" onclick="document.getElementById('fotoKamera').click()" class="py-2 text-xs font-semibold rounded-lg bg-chip hover:bg-chip2 border border-line2 text-ink flex items-center justify-center gap-1.5"><span data-ui-icon="camera" data-icon-class="w-4 h-4"></span><span>Fotografiraj</span></button>
+          <button type="button" onclick="document.getElementById('fotoGalerija').click()" class="py-2 text-xs font-semibold rounded-lg bg-chip hover:bg-chip2 border border-line2 text-ink flex items-center justify-center gap-1.5"><span data-ui-icon="image" data-icon-class="w-4 h-4"></span><span>Iz galerije</span></button>
+        </div>
+        <input type="file" id="fotoKamera" accept="image/*" capture="environment" class="hidden" onchange="dodajFotke(this)">
+        <input type="file" id="fotoGalerija" accept="image/*" multiple class="hidden" onchange="dodajFotke(this)">
+        <div id="fotkeVnos" class="flex flex-wrap gap-2"></div>
+      </div>
+
       <!-- ZNESEK ZA PLAČILO -->
       <div class="rounded-2xl bg-sub border border-line p-4 flex items-center justify-between gap-3 flex-wrap">
         <div>
@@ -415,6 +427,12 @@ tbody tr:hover{ background: rgb(var(--c-sub)); }
   </div>
 </div>
 
+<!-- MODAL: Fotografija (povečava) -->
+<div id="modalFoto" class="fixed inset-0 bg-black/90 hidden items-center justify-center p-3 z-[60]" onclick="zapriFoto()">
+  <img id="fotoVelika" class="max-w-full max-h-full rounded-xl" alt="Fotografija">
+  <button onclick="zapriFoto()" class="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/15 text-white flex items-center justify-center" aria-label="Zapri"><span data-ui-icon="close" data-icon-class="w-5 h-5"></span></button>
+</div>
+
 <!-- MODAL: Cene govedine -->
 <div id="modalCene" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
   <div class="card modal-in max-w-md w-full p-5 space-y-4 max-h-[92vh] overflow-y-auto">
@@ -487,7 +505,9 @@ function uiIcon(name, cls='w-4 h-4') {
     moon: `<path d="M20 15.5A8 8 0 0 1 8.5 4 8.5 8.5 0 1 0 20 15.5Z"/>`,
     monitor: `<rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 21h8M12 18v3"/>`,
     close: `<path d="m6 6 12 12M18 6 6 18"/>`,
-    check: `<path d="m5 12 4 4L19 6"/>`
+    check: `<path d="m5 12 4 4L19 6"/>`,
+    camera: `<path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>`,
+    image: `<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.8"/><path d="m21 16-5-5-9 9"/>`
   };
   return `<svg ${common}>${paths[name] || paths.beef}</svg>`;
 }
@@ -503,11 +523,19 @@ function generirajSistemskeIkone() {
   // Ikona goveda – enaka kot v glavi (rdeča ploščica + bela krava, ~66 % velikosti).
   // Krava je znotraj "safe zone" (maskable), zato je Android ne obreže in ne poveča.
   const COW = `<g fill="#fff" stroke="#fff"><path d="M8.6 6.2C6.6 6.2 4.9 5 4.1 2.8M15.4 6.2c2 0 3.7-1.2 4.5-3.4" fill="none" stroke-width="1.8"/><ellipse cx="4.4" cy="9.9" rx="3.1" ry="1.7" transform="rotate(-22 4.4 9.9)" stroke-width=".4"/><ellipse cx="19.6" cy="9.9" rx="3.1" ry="1.7" transform="rotate(22 19.6 9.9)" stroke-width=".4"/><path d="M8 5.5h8c1.2 0 1.9.9 1.7 2l-.6 4.2c-.3 1.8-1 3-1.6 3.9.9.6 1.4 1.5 1.4 2.6v.6c0 1.9-1.6 3.2-3.5 3.2h-3c-1.9 0-3.5-1.3-3.5-3.2v-.6c0-1.1.5-2 1.4-2.6-.6-.9-1.3-2.1-1.6-3.9l-.6-4.2C6.1 6.4 6.8 5.5 8 5.5Z" stroke-width=".4"/></g><path d="M9.3 10.6h.01M14.7 10.6h.01" fill="none" stroke="#dc2626" stroke-width="2.2" stroke-linecap="round"/><path d="M10.2 18.9h.01M13.8 18.9h.01" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round"/>`;
-  const SCALE = 14; // 24 enot * 14 = 336 px od 512 (≈66 %)
-  const makeSvg = (rounded) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-    <rect width="512" height="512" rx="${rounded ? 112 : 0}" fill="#dc2626"/>
-    <g transform="translate(256 256) scale(${SCALE}) translate(-12 -12.6)" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${COW}</g>
+  // rounded=true: zaobljena ploščica z robom (ikoni "any" in favicon, ostane majhna);
+  // rounded=false: polna ploščica brez roba (maskable + iOS, sistem sam obreže).
+  // Krava je ~50 % ploščice, da ostane majhna kot prej.
+  const makeSvg = (rounded) => {
+    const pad = rounded ? 48 : 0;
+    const size = 512 - 2 * pad;
+    const rx = rounded ? Math.round(size * 0.22) : 0;
+    const sc = size / 512 * 11.6;
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+    <rect x="${pad}" y="${pad}" width="${size}" height="${size}" rx="${rx}" fill="#dc2626"/>
+    <g transform="translate(256 256) scale(${sc}) translate(-12 -12.6)" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${COW}</g>
   </svg>`;
+  };
 
   const render = (svg, size) => new Promise((resolve) => {
     const img = new Image();
@@ -1108,6 +1136,85 @@ async function generirajCeneAI(){
 }
 function zapriCeneGovedine(){ const m=document.getElementById('modalCene'); m.classList.add('hidden'); m.classList.remove('flex'); }
 
+// ===== FOTOGRAFIJE (shranjene v IndexedDB, stisnjene) =====
+let trenutneFotke = []; // {id, data}
+let fotoDb = null;
+function odpriFotoDb(){
+  return new Promise((res,rej)=>{
+    if(fotoDb) return res(fotoDb);
+    if(!window.indexedDB) return rej(new Error('IndexedDB ni na voljo'));
+    const rq = indexedDB.open('mesnica_foto',1);
+    rq.onupgradeneeded = ()=>{ rq.result.createObjectStore('fotke',{keyPath:'id'}); };
+    rq.onsuccess = ()=>{ fotoDb = rq.result; res(fotoDb); };
+    rq.onerror = ()=>rej(rq.error);
+  });
+}
+async function fotoShrani(id,data){
+  const db = await odpriFotoDb();
+  return new Promise((res,rej)=>{ const tx=db.transaction('fotke','readwrite'); tx.objectStore('fotke').put({id,data}); tx.oncomplete=()=>res(); tx.onerror=()=>rej(tx.error); });
+}
+async function fotoBrisi(id){
+  const db = await odpriFotoDb();
+  return new Promise((res,rej)=>{ const tx=db.transaction('fotke','readwrite'); tx.objectStore('fotke').delete(id); tx.oncomplete=()=>res(); tx.onerror=()=>rej(tx.error); });
+}
+async function fotoBeri(id){
+  const db = await odpriFotoDb();
+  return new Promise((res,rej)=>{ const rq=db.transaction('fotke','readonly').objectStore('fotke').get(id); rq.onsuccess=()=>res(rq.result?rq.result.data:null); rq.onerror=()=>rej(rq.error); });
+}
+function stisniSliko(file, maxDim=1280, kakovost=0.72){
+  return new Promise((res,rej)=>{
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = ()=>{
+      const k = Math.min(1, maxDim/Math.max(img.naturalWidth, img.naturalHeight));
+      const w = Math.round(img.naturalWidth*k), h = Math.round(img.naturalHeight*k);
+      const c = document.createElement('canvas'); c.width=w; c.height=h;
+      c.getContext('2d').drawImage(img,0,0,w,h);
+      URL.revokeObjectURL(url);
+      res(c.toDataURL('image/jpeg', kakovost));
+    };
+    img.onerror = ()=>{ URL.revokeObjectURL(url); rej(new Error('Slike ni mogoče prebrati')); };
+    img.src = url;
+  });
+}
+async function dodajFotke(input){
+  const datoteke = Array.from(input.files || []);
+  input.value = '';
+  for(const f of datoteke){
+    try{
+      const data = await stisniSliko(f);
+      trenutneFotke.push({id:'f'+Date.now()+Math.random().toString(36).slice(2,7), data});
+    }catch(e){ toast('Napaka pri sliki: '+e.message,'danger'); }
+  }
+  osveziFotke();
+  if(datoteke.length) toast(`Dodanih fotografij: ${datoteke.length}`,'info');
+}
+function odstraniFotko(i){ trenutneFotke.splice(i,1); osveziFotke(); }
+function osveziFotke(){
+  const c = document.getElementById('fotkeVnos'); if(!c) return; c.innerHTML='';
+  trenutneFotke.forEach((f,i)=>{
+    const w = document.createElement('div'); w.className='relative';
+    w.innerHTML = `<img src="${f.data}" onclick="odpriFoto(this.src)" class="w-16 h-16 object-cover rounded-lg border border-line2" alt="Fotografija"><button type="button" onclick="odstraniFotko(${i})" aria-label="Odstrani fotografijo" class="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-accent text-white flex items-center justify-center">${uiIcon('x','w-3 h-3')}</button>`;
+    c.appendChild(w);
+  });
+}
+function odpriFoto(src){ document.getElementById('fotoVelika').src = src; const m=document.getElementById('modalFoto'); m.classList.remove('hidden'); m.classList.add('flex'); }
+function zapriFoto(){ const m=document.getElementById('modalFoto'); m.classList.add('hidden'); m.classList.remove('flex'); }
+async function naloziFotkeRacunov(){
+  const bloki = document.querySelectorAll('[data-fotke]');
+  for(const blok of bloki){
+    for(const id of blok.dataset.fotke.split(',').filter(Boolean)){
+      try{
+        const data = await fotoBeri(id); if(!data) continue;
+        const im = document.createElement('img');
+        im.src = data; im.alt = 'Fotografija'; im.className = 'w-14 h-14 object-cover rounded-lg border border-line2 cursor-pointer';
+        im.onclick = ()=>odpriFoto(data);
+        blok.appendChild(im);
+      }catch(e){}
+    }
+  }
+}
+
 function shraniCenikVShrambo(){ localStorage.setItem('mesnica_cenik', JSON.stringify(cenik)); }
 
 function napolniIzbiroMesa(){
@@ -1156,7 +1263,7 @@ function osveziTabeloPostavk(){
   document.getElementById('skupajZaPlacilo').textContent = `${skupaj.toFixed(2)} €`;
 }
 
-function shraniRacun(){
+async function shraniRacun(){
   const priimek = document.getElementById('priimek').value.trim();
   const datum = document.getElementById('datum').value;
   const opombe = document.getElementById('opombe').value.trim();
@@ -1166,20 +1273,27 @@ function shraniRacun(){
   
   dodajStranko(priimek);
   const skupnaVrednost = trenutnePostavke.reduce((s,p)=>s+p.skupnaCena,0);
+  const fotke = [];
+  try{
+    for(const f of trenutneFotke){ await fotoShrani(f.id, f.data); fotke.push(f.id); }
+  }catch(e){ toast('Fotografij ni mogoče shraniti: '+e.message,'danger',6000); }
   if(idUrejevanja){
     const idx = shranjeniRacuni.findIndex(r=>r.id===idUrejevanja);
-    if(idx!==-1) shranjeniRacuni[idx] = {...shranjeniRacuni[idx], priimek, datum, opombe, postavke:[...trenutnePostavke], skupaj:skupnaVrednost};
+    if(idx!==-1){
+      (shranjeniRacuni[idx].fotke||[]).forEach(id=>{ if(!fotke.includes(id)) fotoBrisi(id).catch(()=>{}); });
+      shranjeniRacuni[idx] = {...shranjeniRacuni[idx], priimek, datum, opombe, postavke:[...trenutnePostavke], skupaj:skupnaVrednost, fotke};
+    }
     prekliciUrejanje(); toast('Račun posodobljen.');
   } else {
-    shranjeniRacuni.unshift({id:Date.now(), priimek, datum, opombe, postavke:[...trenutnePostavke], skupaj:skupnaVrednost});
+    shranjeniRacuni.unshift({id:Date.now(), priimek, datum, opombe, postavke:[...trenutnePostavke], skupaj:skupnaVrednost, fotke});
     toast('Račun shranjen.');
   }
   localStorage.setItem('mesnica_racuni', JSON.stringify(shranjeniRacuni));
   document.getElementById('priimek').value=''; document.getElementById('opombe').value='';
-  trenutnePostavke=[]; osveziTabeloPostavk(); osveziFiltreDatumov(); prikaziShranjeneRacune();
+  trenutnePostavke=[]; trenutneFotke=[]; osveziFotke(); osveziTabeloPostavk(); osveziFiltreDatumov(); prikaziShranjeneRacune();
 }
 
-function urediRacun(id){
+async function urediRacun(id){
   const racun = shranjeniRacuni.find(r=>r.id===id); if(!racun) return;
   idUrejevanja=id;
   document.getElementById('priimek').value = racun.priimek;
@@ -1191,12 +1305,17 @@ function urediRacun(id){
   document.getElementById('urejanjeBadge').classList.remove('hidden');
   document.getElementById('btnPrekliciUrejanje').classList.remove('hidden');
   window.scrollTo({top:0, behavior:'smooth'});
+  trenutneFotke = [];
+  for(const fid of (racun.fotke||[])){
+    try{ const d = await fotoBeri(fid); if(d) trenutneFotke.push({id:fid, data:d}); }catch(e){}
+  }
+  if(idUrejevanja===id) osveziFotke();
 }
 
 function prekliciUrejanje(){
   idUrejevanja=null;
   document.getElementById('priimek').value=''; document.getElementById('opombe').value='';
-  trenutnePostavke=[]; osveziTabeloPostavk();
+  trenutnePostavke=[]; trenutneFotke=[]; osveziFotke(); osveziTabeloPostavk();
   document.getElementById('naslovObrazca').textContent = "Novi račun";
   document.getElementById('urejanjeBadge').classList.add('hidden');
   document.getElementById('btnPrekliciUrejanje').classList.add('hidden');
@@ -1204,6 +1323,8 @@ function prekliciUrejanje(){
 
 function izbrisiRacun(id){
   if(confirm("Res želiš izbrisati ta račun?")){
+    const stari = shranjeniRacuni.find(r=>r.id===id);
+    if(stari) (stari.fotke||[]).forEach(fid=>fotoBrisi(fid).catch(()=>{}));
     shranjeniRacuni = shranjeniRacuni.filter(r=>r.id!==id);
     localStorage.setItem('mesnica_racuni', JSON.stringify(shranjeniRacuni));
     if(idUrejevanja===id) prekliciUrejanje();
@@ -1261,9 +1382,11 @@ function prikaziShranjeneRacune(){
         </div>
       </div>
       <ul class="px-3 py-1.5 rounded-xl bg-surface border border-line">${postavkeHtml}</ul>
-      ${racun.opombe ? `<p class="text-[11px] text-mute">${racun.opombe}</p>` : ''}`;
+      ${racun.opombe ? `<p class="text-[11px] text-mute">${racun.opombe}</p>` : ''}
+      ${(racun.fotke && racun.fotke.length) ? `<div class="flex flex-wrap gap-2" data-fotke="${racun.fotke.join(',')}"></div>` : ''}`;
     seznam.appendChild(div);
   });
+  naloziFotkeRacunov();
 }
 
 function odpriNastavitve(){ osveziTemaGumbe(); document.getElementById('geminiKljuc').value=localStorage.getItem('mesnica_gemini_key')||''; prikaziCenikVNastavitvah(); document.getElementById('modalNastavitve').classList.remove('hidden'); document.getElementById('modalNastavitve').classList.add('flex'); }
@@ -1303,8 +1426,14 @@ function dodajNovKosMesa(){
 }
 
 // iOS prilagojen izvoz JSON
-function exportPodatki(){
-  const dataStr = JSON.stringify({cenik, racuni:shranjeniRacuni, stranke}, null, 2);
+async function exportPodatki(){
+  const fotke = {};
+  for(const r of shranjeniRacuni){
+    for(const fid of (r.fotke||[])){
+      try{ const d = await fotoBeri(fid); if(d) fotke[fid] = d; }catch(e){}
+    }
+  }
+  const dataStr = JSON.stringify({cenik, racuni:shranjeniRacuni, stranke, fotke}, null, 2);
   const blob = new Blob([dataStr], {type:'application/json'});
   
   if (navigator.share && /iPhone|iPad|iPod/i.test(navigator.userAgent)) {
@@ -1321,29 +1450,27 @@ function exportPodatki(){
 function importPodatki(e){
   const file = e.target.files[0]; if(!file) return;
   const reader = new FileReader();
-  reader.onload = (evt)=>{
+  reader.onload = async (evt)=>{
     try{
       const d = JSON.parse(evt.target.result);
-      if(d.cenik && d.racuni){ cenik=d.cenik; shranjeniRacuni=d.racuni; if(Array.isArray(d.stranke)) localStorage.setItem('mesnica_stranke', JSON.stringify(d.stranke)); shraniCenikVShrambo(); localStorage.setItem('mesnica_racuni', JSON.stringify(shranjeniRacuni)); location.reload(); }
+      if(d.cenik && d.racuni){
+        if(d.fotke){ for(const fid in d.fotke){ try{ await fotoShrani(fid, d.fotke[fid]); }catch(e){} } }
+        cenik=d.cenik; shranjeniRacuni=d.racuni; if(Array.isArray(d.stranke)) localStorage.setItem('mesnica_stranke', JSON.stringify(d.stranke)); shraniCenikVShrambo(); localStorage.setItem('mesnica_racuni', JSON.stringify(shranjeniRacuni)); location.reload(); }
     }catch(err){ toast('Datoteka ni veljavna.','danger'); }
   };
   reader.readAsText(file);
 }
 
 function oblikujRacunVTxt(r){
-  let txt = `========================================\n`;
-  txt += `RAČUN - OBRAČUN MESA\n`;
-  txt += `Stranka: ${r.priimek}\n`;
+  const eur = n => Number(n).toFixed(2).replace('.', ',');
+  let txt = `Stranka: ${r.priimek}\n`;
   txt += `Datum: ${urediPrikazDatuma(r.datum)}\n`;
   if(r.opombe) txt += `Opombe: ${r.opombe}\n`;
-  txt += `----------------------------------------\n`;
-  txt += `POSTAVKE:\n`;
-  r.postavke.forEach(p => { 
-    txt += `- ${p.kos.padEnd(16)}: ${p.teza.toFixed(2).padStart(6)} kg x ${p.cenaNaKg.toFixed(2).padStart(5)} EUR/kg = ${p.skupnaCena.toFixed(2).padStart(7)} EUR\n`; 
+  txt += `\n`;
+  r.postavke.forEach(p => {
+    txt += `${p.kos}: ${eur(p.teza)} kg x ${eur(p.cenaNaKg)} €/kg = ${eur(p.skupnaCena)} €\n`;
   });
-  txt += `----------------------------------------\n`;
-  txt += `SKUPAJ ZA PLAČILO: ${r.skupaj.toFixed(2)} EUR\n`;
-  txt += `========================================\n`;
+  txt += `\nSkupaj za plačilo: ${eur(r.skupaj)} €`;
   return txt;
 }
 
@@ -1381,8 +1508,7 @@ function fallbackKopiranje(besedilo) {
 // iOS varen izvoz TXT datoteke
 function izvoziVseRacuneTxt(){
   if(shranjeniRacuni.length===0){ toast('Ni računov za izvoz.','danger'); return; }
-  let txt = `OBRAČUN MESA - IZVOZ RAČUNOV\n\n`;
-  shranjeniRacuni.forEach(r => { txt += oblikujRacunVTxt(r) + `\n\n`; });
+  let txt = shranjeniRacuni.map(r => oblikujRacunVTxt(r)).join(`\n\n\n`) + `\n`;
   
   const blob = new Blob(['\uFEFF' + txt], {type: 'text/plain;charset=utf-8'});
 
